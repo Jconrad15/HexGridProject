@@ -11,9 +11,13 @@ namespace TheZooMustGrow
         List<Vector3> vertices;
         List<int> triangles;
 
+        MeshCollider meshCollider;
+
         private void Awake()
         {
             GetComponent<MeshFilter>().mesh = hexMesh = new Mesh();
+            meshCollider = gameObject.AddComponent<MeshCollider>();
+
             hexMesh.name = "Hex Mesh";
             vertices = new List<Vector3>();
             triangles = new List<int>();
@@ -33,6 +37,7 @@ namespace TheZooMustGrow
             hexMesh.vertices = vertices.ToArray();
             hexMesh.triangles = triangles.ToArray();
             hexMesh.RecalculateNormals();
+            meshCollider.sharedMesh = hexMesh;
         }
 
         private void Triangulate(HexCell cell)
