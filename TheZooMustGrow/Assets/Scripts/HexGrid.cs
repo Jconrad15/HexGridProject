@@ -49,13 +49,14 @@ namespace TheZooMustGrow
             HexCell cell = cells[i] = Instantiate(cellPrefab);
             cell.transform.SetParent(transform, false);
             cell.transform.localPosition = position;
+            cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
 
             // Create label
             TextMeshProUGUI label = Instantiate(cellLabelPrefab);
             label.rectTransform.SetParent(gridCanvas.transform, false);
             label.rectTransform.anchoredPosition =
                 new Vector2(position.x, position.z);
-            label.SetText(x.ToString() + "\n" + z.ToString());
+            label.SetText(cell.coordinates.ToStringOnSeparateLines());
 
         }
 
