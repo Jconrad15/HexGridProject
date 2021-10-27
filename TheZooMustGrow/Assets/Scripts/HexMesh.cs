@@ -13,6 +13,8 @@ namespace TheZooMustGrow
 
         MeshCollider meshCollider;
 
+        List<Color> colors;
+
         private void Awake()
         {
             GetComponent<MeshFilter>().mesh = hexMesh = new Mesh();
@@ -20,6 +22,7 @@ namespace TheZooMustGrow
 
             hexMesh.name = "Hex Mesh";
             vertices = new List<Vector3>();
+            colors = new List<Color>();
             triangles = new List<int>();
         }
 
@@ -27,6 +30,7 @@ namespace TheZooMustGrow
         {
             hexMesh.Clear();
             vertices.Clear();
+            colors.Clear();
             triangles.Clear();
 
             for (int i = 0; i < cells.Length; i++)
@@ -35,6 +39,7 @@ namespace TheZooMustGrow
             }
 
             hexMesh.vertices = vertices.ToArray();
+            hexMesh.colors = colors.ToArray();
             hexMesh.triangles = triangles.ToArray();
             hexMesh.RecalculateNormals();
             meshCollider.sharedMesh = hexMesh;
@@ -52,6 +57,7 @@ namespace TheZooMustGrow
                     center + HexMetrics.corners[i],
                     center + HexMetrics.corners[i + 1]
                 );
+                AddTriangleColor(cell.color);
             }
 
         }
@@ -68,6 +74,13 @@ namespace TheZooMustGrow
             triangles.Add(vertexIndex + 2);
         }
 
+        void AddTriangleColor(Color color)
+        {
+            // Three vertices per triangle
+            colors.Add(color);
+            colors.Add(color);
+            colors.Add(color);
+        }
 
     }
 }

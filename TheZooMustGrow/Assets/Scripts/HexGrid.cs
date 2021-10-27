@@ -17,6 +17,9 @@ namespace TheZooMustGrow
         HexCell[] cells;
         HexMesh hexMesh;
 
+        public Color defaultColor = Color.white;
+        public Color touchedColor = Color.magenta;
+
         private void Awake()
         {
             gridCanvas = GetComponentInChildren<Canvas>();
@@ -50,6 +53,7 @@ namespace TheZooMustGrow
             cell.transform.SetParent(transform, false);
             cell.transform.localPosition = position;
             cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+            cell.color = defaultColor;
 
             // Create label
             TextMeshProUGUI label = Instantiate(cellLabelPrefab);
@@ -82,6 +86,12 @@ namespace TheZooMustGrow
         {
             position = transform.InverseTransformPoint(position);
             HexCoordinates coordinates = HexCoordinates.FromPosition(position);
+
+            int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
+            HexCell cell = cells[index];
+            cell.color = touchedColor;
+            hexMesh.Triangulate(cells);
+
             Debug.Log("Touched at " + coordinates.ToString());
         }
 

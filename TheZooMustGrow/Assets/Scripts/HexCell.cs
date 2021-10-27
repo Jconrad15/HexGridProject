@@ -6,5 +6,6 @@ namespace TheZooMustGrow
     {
         public HexCoordinates coordinates;
 
+        public Color color;
     }
 }
