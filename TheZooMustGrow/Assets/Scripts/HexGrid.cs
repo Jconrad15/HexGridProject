@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-namespace TheZoomMustGrow
+namespace TheZooMustGrow
 {
     public class HexGrid : MonoBehaviour
     {
@@ -15,10 +15,12 @@ namespace TheZoomMustGrow
         Canvas gridCanvas;
 
         HexCell[] cells;
+        HexMesh hexMesh;
 
         private void Awake()
         {
             gridCanvas = GetComponentInChildren<Canvas>();
+            hexMesh = GetComponentInChildren<HexMesh>();
 
             cells = new HexCell[height * width];
 
@@ -29,6 +31,11 @@ namespace TheZoomMustGrow
                     CreateCell(x, z, i++);
                 }
             }
+        }
+
+        private void Start()
+        {
+            hexMesh.Triangulate(cells);
         }
 
         private void CreateCell(int x, int z, int i)

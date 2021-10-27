@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TheZoomMustGrow
+namespace TheZooMustGrow
 {
     public class HexCell : MonoBehaviour
     {
