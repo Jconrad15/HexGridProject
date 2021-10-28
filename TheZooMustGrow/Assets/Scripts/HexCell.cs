@@ -36,13 +36,13 @@ namespace TheZooMustGrow
                 position.y = value * HexMetrics.elevationStep;
                 // Perturb the y value
                 position.y +=
-                    (HexMetrics.SampleNoise(position).y * 2f - 1f) *
+                    ((HexMetrics.SampleNoise(position).y * 2f) - 1f) *
                     HexMetrics.elevationPerturbStrength;
                 transform.localPosition = position;
 
                 // Adjust the height of the UI label
                 Vector3 uiPosition = uiRect.localPosition;
-                uiPosition.z = elevation * -HexMetrics.elevationStep;
+                uiPosition.z = (elevation * -HexMetrics.elevationStep) - HexMetrics.labelOffset;
                 uiRect.localPosition = uiPosition;
 
                 Refresh();
