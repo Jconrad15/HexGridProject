@@ -76,7 +76,6 @@ namespace TheZooMustGrow
 
         void ValidateDrag(HexCell currentCell)
         {
-            Debug.Log("Validate Drag");
             for (dragDirection = HexDirection.NE;
                 dragDirection <= HexDirection.NW;
                 dragDirection++)

@@ -249,6 +249,7 @@ namespace TheZooMustGrow
 
             // Set the incoming river of the next cell
             neighbor.RemoveIncomingRiver();
+            neighbor.hasIncomingRiver = true;
             neighbor.incomingRiver = direction.Opposite();
             neighbor.RefreshSelfOnly();
         }
