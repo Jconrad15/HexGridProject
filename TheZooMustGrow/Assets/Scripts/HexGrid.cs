@@ -19,8 +19,12 @@ namespace TheZooMustGrow
 
         public Color defaultColor = Color.white;
 
+        public Texture2D noiseSource;
+
         private void Awake()
         {
+            HexMetrics.noiseSource = noiseSource;
+
             gridCanvas = GetComponentInChildren<Canvas>();
             hexMesh = GetComponentInChildren<HexMesh>();
 
@@ -33,6 +37,11 @@ namespace TheZooMustGrow
                     CreateCell(x, z, i++);
                 }
             }
+        }
+
+        void OnEnable()
+        {
+            HexMetrics.noiseSource = noiseSource;
         }
 
         private void Start()

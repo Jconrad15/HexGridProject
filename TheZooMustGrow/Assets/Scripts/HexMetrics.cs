@@ -18,6 +18,7 @@ namespace TheZooMustGrow
         public const float horizontalTerraceStepSize = 1f / terraceSteps;
         public const float verticalTerraceStepSize = 1f / (terracesPerSlope + 1);
 
+        public static Texture2D noiseSource;
 
         // Hex corners on the XZ plane
         private static Vector3[] corners = {
@@ -95,5 +96,12 @@ namespace TheZooMustGrow
 
             return HexEdgeType.Cliff;
         }
+
+        public static Vector4 SampleNoise (Vector3 position)
+        {
+            return noiseSource.GetPixelBilinear(position.x, position.z);
+        }
+
+
     }
 }
