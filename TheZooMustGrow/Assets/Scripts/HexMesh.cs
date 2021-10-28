@@ -7,23 +7,24 @@ namespace TheZooMustGrow
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class HexMesh : MonoBehaviour
     {
+        // The lists that HexMesh uses are effectively temporary buffers.
+        // They are only used during triangulation.
+        // And chunks are triangulated one at a time.
+        // So we really only need one set of lists,
+        // not one set per hex mesh object.
+        // We can do so by making the lists static.
+        static List<Vector3> vertices = new List<Vector3>();
+        static List<Color> colors = new List<Color>();
+        static List<int> triangles = new List<int>();
+
         Mesh hexMesh;
-        List<Vector3> vertices;
-        List<int> triangles;
-
         MeshCollider meshCollider;
-
-        List<Color> colors;
 
         private void Awake()
         {
             GetComponent<MeshFilter>().mesh = hexMesh = new Mesh();
             meshCollider = gameObject.AddComponent<MeshCollider>();
-
             hexMesh.name = "Hex Mesh";
-            vertices = new List<Vector3>();
-            colors = new List<Color>();
-            triangles = new List<int>();
         }
 
         public void Triangulate(HexCell[] cells)
@@ -61,7 +62,7 @@ namespace TheZooMustGrow
                 center + HexMetrics.GetSecondSolidCorner(direction)
             );
 
-            TriangulateEdgeFan(center, e, cell.color);
+            TriangulateEdgeFan(center, e, cell.Color);
 
             // Add a connection to neighboring hex cell if it is NE, E, and SE
             if (direction <= HexDirection.SE)
@@ -119,7 +120,7 @@ namespace TheZooMustGrow
             }
             else
             {
-                TriangulateEdgeStrip(e1, cell.color, e2, neighbor.color);
+                TriangulateEdgeStrip(e1, cell.Color, e2, neighbor.Color);
             }
 
             // Add triangular holes/corners for all NE and E neighbors
@@ -217,7 +218,7 @@ namespace TheZooMustGrow
             else
             {
                 AddTriangle(bottom, left, right);
-                AddTriangleColor(bottomCell.color, leftCell.color, rightCell.color);
+                AddTriangleColor(bottomCell.Color, leftCell.Color, rightCell.Color);
             }
         }
 
@@ -228,12 +229,12 @@ namespace TheZooMustGrow
         {
             Vector3 v3 = HexMetrics.TerraceLerp(begin, left, 1);
             Vector3 v4 = HexMetrics.TerraceLerp(begin, right, 1);
-            Color c3 = HexMetrics.TerraceLerp(beginCell.color, leftCell.color, 1);
-            Color c4 = HexMetrics.TerraceLerp(beginCell.color, rightCell.color, 1);
+            Color c3 = HexMetrics.TerraceLerp(beginCell.Color, leftCell.Color, 1);
+            Color c4 = HexMetrics.TerraceLerp(beginCell.Color, rightCell.Color, 1);
 
             // First slope
             AddTriangle(begin, v3, v4);
-            AddTriangleColor(beginCell.color, c3, c4);
+            AddTriangleColor(beginCell.Color, c3, c4);
 
             // Intermediate slopes
             for (int i = 2; i < HexMetrics.terraceSteps; i++)
@@ -247,8 +248,8 @@ namespace TheZooMustGrow
                 // Determine the ending point 
                 v3 = HexMetrics.TerraceLerp(begin, left, i);
                 v4 = HexMetrics.TerraceLerp(begin, right, i);
-                c3 = HexMetrics.TerraceLerp(beginCell.color, leftCell.color, i);
-                c4 = HexMetrics.TerraceLerp(beginCell.color, rightCell.color, i);
+                c3 = HexMetrics.TerraceLerp(beginCell.Color, leftCell.Color, i);
+                c4 = HexMetrics.TerraceLerp(beginCell.Color, rightCell.Color, i);
 
                 // Add the quad
                 AddQuad(v1, v2, v3, v4);
@@ -257,7 +258,7 @@ namespace TheZooMustGrow
 
             // Last slope
             AddQuad(v3, v4, left, right);
-            AddQuadColor(c3, c4, leftCell.color, rightCell.color);
+            AddQuadColor(c3, c4, leftCell.Color, rightCell.Color);
         }
 
         void TriangulateCornerTerracesCliff(
@@ -271,7 +272,7 @@ namespace TheZooMustGrow
             if (b < 0) { b = -b; }
             
             Vector3 boundary = Vector3.Lerp(Perturb(begin), Perturb(right), b);
-            Color boundaryColor = Color.Lerp(beginCell.color, rightCell.color, b);
+            Color boundaryColor = Color.Lerp(beginCell.Color, rightCell.Color, b);
 
             TriangulateBoundaryTriangle(
                 begin, beginCell, left, leftCell, boundary, boundaryColor
@@ -289,7 +290,7 @@ namespace TheZooMustGrow
             {
                 // Else add a simple triangle
                 AddTriangleUnperturbed(Perturb(left), Perturb(right), boundary);
-                AddTriangleColor(leftCell.color, rightCell.color, boundaryColor);
+                AddTriangleColor(leftCell.Color, rightCell.Color, boundaryColor);
             }
 
         }
@@ -305,7 +306,7 @@ namespace TheZooMustGrow
             if (b < 0) { b = -b; }
 
             Vector3 boundary = Vector3.Lerp(Perturb(begin), Perturb(left), b);
-            Color boundaryColor = Color.Lerp(beginCell.color, leftCell.color, b);
+            Color boundaryColor = Color.Lerp(beginCell.Color, leftCell.Color, b);
 
             TriangulateBoundaryTriangle(
                 right, rightCell, begin, beginCell, boundary, boundaryColor
@@ -320,7 +321,7 @@ namespace TheZooMustGrow
             else
             {
                 AddTriangleUnperturbed(Perturb(left), Perturb(right), boundary);
-                AddTriangleColor(leftCell.color, rightCell.color, boundaryColor);
+                AddTriangleColor(leftCell.Color, rightCell.Color, boundaryColor);
             }
         }
 
@@ -330,11 +331,11 @@ namespace TheZooMustGrow
             Vector3 boundary, Color boundaryColor)
         {
             Vector3 v2 = Perturb(HexMetrics.TerraceLerp(begin, left, 1));
-            Color c2 = HexMetrics.TerraceLerp(beginCell.color, leftCell.color, 1);
+            Color c2 = HexMetrics.TerraceLerp(beginCell.Color, leftCell.Color, 1);
 
             // First slope
             AddTriangleUnperturbed(Perturb(begin), v2, boundary);
-            AddTriangleColor(beginCell.color, c2, boundaryColor);
+            AddTriangleColor(beginCell.Color, c2, boundaryColor);
 
             // Intermediate slopes
             for (int i = 2; i < HexMetrics.terraceSteps; i++)
@@ -345,7 +346,7 @@ namespace TheZooMustGrow
 
                 // Determine ending point
                 v2 = Perturb(HexMetrics.TerraceLerp(begin, left, i));
-                c2 = HexMetrics.TerraceLerp(beginCell.color, leftCell.color, i);
+                c2 = HexMetrics.TerraceLerp(beginCell.Color, leftCell.Color, i);
 
                 // Add the triangle
                 AddTriangleUnperturbed(v1, v2, boundary);
@@ -354,7 +355,7 @@ namespace TheZooMustGrow
 
             // Last slope
             AddTriangleUnperturbed(v2, Perturb(left), boundary);
-            AddTriangleColor(c2, leftCell.color, boundaryColor);
+            AddTriangleColor(c2, leftCell.Color, boundaryColor);
         }
 
         void TriangulateEdgeTerraces(
@@ -362,10 +363,10 @@ namespace TheZooMustGrow
             EdgeVertices end, HexCell endCell)
         {
             EdgeVertices e2 = EdgeVertices.TerraceLerp(begin, end, 1);
-            Color c2 = HexMetrics.TerraceLerp(beginCell.color, endCell.color, 1);
+            Color c2 = HexMetrics.TerraceLerp(beginCell.Color, endCell.Color, 1);
 
             // First slope
-            TriangulateEdgeStrip(begin, beginCell.color, e2, c2);
+            TriangulateEdgeStrip(begin, beginCell.Color, e2, c2);
 
             for (int i = 2; i < HexMetrics.terraceSteps; i++)
             {
@@ -375,14 +376,14 @@ namespace TheZooMustGrow
 
                 // Determine ending point
                 e2 = EdgeVertices.TerraceLerp(begin, end, i);
-                c2 = HexMetrics.TerraceLerp(beginCell.color, endCell.color, i);
+                c2 = HexMetrics.TerraceLerp(beginCell.Color, endCell.Color, i);
 
                 // Add the quad
                 TriangulateEdgeStrip(e1, c1, e2, c2);
             }
 
             // Last slope
-            TriangulateEdgeStrip(e2, c2, end, endCell.color);
+            TriangulateEdgeStrip(e2, c2, end, endCell.Color);
         }
 
         void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)

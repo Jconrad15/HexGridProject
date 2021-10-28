@@ -6,33 +6,55 @@ namespace TheZooMustGrow
 {
     public class HexGrid : MonoBehaviour
     {
-        public int width = 6;
-        public int height = 6;
+        public int chunkCountX = 4, chunkCountZ = 3;
+
+        private int cellCountX, cellCountZ;
 
         public HexCell cellPrefab;
         public TextMeshProUGUI cellLabelPrefab;
 
-        Canvas gridCanvas;
-
         HexCell[] cells;
-        HexMesh hexMesh;
 
         public Color defaultColor = Color.white;
 
         public Texture2D noiseSource;
 
+        public HexGridChunk chunkPrefab;
+        HexGridChunk[] chunks;
+
+
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
 
-            gridCanvas = GetComponentInChildren<Canvas>();
-            hexMesh = GetComponentInChildren<HexMesh>();
+            cellCountX = chunkCountX * HexMetrics.chunkSizeX;
+            cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
 
-            cells = new HexCell[height * width];
+            CreateChunks();
+            CreateCells();
+        }
 
-            for (int z = 0, i = 0; z < height; z++)
+        private void CreateChunks()
+        {
+            chunks = new HexGridChunk[chunkCountX * chunkCountZ];
+
+            for (int z = 0, i = 0; z < chunkCountZ; z++)
             {
-                for (int x =0; x < width; x++)
+                for (int x = 0; x < chunkCountX; x++)
+                {
+                    HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab);
+                    chunk.transform.SetParent(transform);
+                }
+            }
+        }
+
+        private void CreateCells()
+        {
+            cells = new HexCell[cellCountZ * cellCountX];
+
+            for (int z = 0, i = 0; z < cellCountZ; z++)
+            {
+                for (int x = 0; x < cellCountX; x++)
                 {
                     CreateCell(x, z, i++);
                 }
@@ -44,11 +66,6 @@ namespace TheZooMustGrow
             HexMetrics.noiseSource = noiseSource;
         }
 
-        private void Start()
-        {
-            hexMesh.Triangulate(cells);
-        }
-
         private void CreateCell(int x, int z, int i)
         {
             Vector3 position;
@@ -58,10 +75,9 @@ namespace TheZooMustGrow
             position.z = z * (HexMetrics.outerRadius * 1.5f);
 
             HexCell cell = cells[i] = Instantiate(cellPrefab);
-            cell.transform.SetParent(transform, false);
             cell.transform.localPosition = position;
             cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
-            cell.color = defaultColor;
+            cell.Color = defaultColor;
 
             // Set neighboring HexCells
             // East/west neighbors
@@ -77,26 +93,25 @@ namespace TheZooMustGrow
                 if ((z & 1) == 0)
                 {
                     // For the even rows
-                    cell.SetNeighbor(HexDirection.SE, cells[i - width]);
+                    cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX]);
                     if (x > 0)
                     {
-                        cell.SetNeighbor(HexDirection.SW, cells[i - width - 1]);
+                        cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX - 1]);
                     }
                 }
                 else
                 {
                     // For the odd rows
-                    cell.SetNeighbor(HexDirection.SW, cells[i - width]);
-                    if (x < width - 1)
+                    cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX]);
+                    if (x < cellCountX - 1)
                     {
-                        cell.SetNeighbor(HexDirection.SE, cells[i - width + 1]);
+                        cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX + 1]);
                     }
                 }
             }
 
             // Create label
             TextMeshProUGUI label = Instantiate(cellLabelPrefab);
-            label.rectTransform.SetParent(gridCanvas.transform, false);
             label.rectTransform.anchoredPosition =
                 new Vector2(position.x, position.z);
             label.SetText(cell.coordinates.ToStringOnSeparateLines());
@@ -106,6 +121,19 @@ namespace TheZooMustGrow
 
             // Set initial elevation to 0, this also perturbs y values
             cell.Elevation = 0;
+
+            AddCellToChunk(x, z, cell);
+        }
+
+        void AddCellToChunk(int x, int z, HexCell cell)
+        {
+            int chunkX = x / HexMetrics.chunkSizeX;
+            int chunkZ = z / HexMetrics.chunkSizeZ;
+            HexGridChunk chunk = chunks[chunkX + chunkZ * chunkCountX];
+
+            int localX = x - chunkX * HexMetrics.chunkSizeX;
+            int localZ = z - chunkZ * HexMetrics.chunkSizeZ;
+            chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
         }
 
         public HexCell GetCell(Vector3 position)
@@ -113,14 +141,10 @@ namespace TheZooMustGrow
             position = transform.InverseTransformPoint(position);
             HexCoordinates coordinates = HexCoordinates.FromPosition(position);
 
-            int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
+            int index = coordinates.X + coordinates.Z * cellCountX + coordinates.Z / 2;
             return cells[index];
         }
 
-        public void Refresh()
-        {
-            hexMesh.Triangulate(cells);
-        }
 
     }
 }

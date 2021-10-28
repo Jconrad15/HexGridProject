@@ -6,12 +6,12 @@ namespace TheZooMustGrow
     {
         public HexCoordinates coordinates;
 
-        public Color color;
-
         [SerializeField]
         private HexCell[] neighbors;
 
         public RectTransform uiRect;
+
+        public HexGridChunk chunk;
 
         public Vector3 Position
         {
@@ -25,7 +25,10 @@ namespace TheZooMustGrow
         {
             get { return elevation; }
             set 
-            { 
+            {
+                // Return if not changed
+                if (elevation == value) { return; }
+
                 elevation = value;
 
                 // Adjust the actual height of the mesh
@@ -41,9 +44,23 @@ namespace TheZooMustGrow
                 Vector3 uiPosition = uiRect.localPosition;
                 uiPosition.z = elevation * -HexMetrics.elevationStep;
                 uiRect.localPosition = uiPosition;
+
+                Refresh();
             }
         }
-        private int elevation;
+        private int elevation = int.MinValue;
+
+        public Color Color
+        {
+            get { return color; }
+            set
+            {
+                if (color == value) { return; }
+                color = value;
+                Refresh();
+            }
+        }
+        private Color color;
 
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
@@ -76,6 +93,21 @@ namespace TheZooMustGrow
             return HexMetrics.GetEdgeType(elevation, otherCell.elevation);
         }
 
-
+        void Refresh()
+        {
+            // Only refresh the chunk if it has been assigned
+            if (chunk)
+            {
+                chunk.Refresh();
+                for (int i = 0; i < neighbors.Length; i++)
+                {
+                    HexCell neighbor = neighbors[i];
+                    if (neighbor != null && neighbor.chunk != chunk)
+                    {
+                        neighbor.chunk.Refresh();
+                    }
+                }
+            }
+        }
     }
 }
