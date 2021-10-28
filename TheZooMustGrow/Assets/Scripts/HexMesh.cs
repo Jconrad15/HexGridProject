@@ -71,6 +71,13 @@ namespace TheZooMustGrow
             }
         }
 
+        /// <summary>
+        /// Triangulates the quad bridge and triangle corners that connect HexCells.
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="cell"></param>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
         void TriangulateConnection(
             HexDirection direction, HexCell cell, Vector3 v1, Vector3 v2)
         {
@@ -81,6 +88,9 @@ namespace TheZooMustGrow
             Vector3 v3 = v1 + bridge;
             Vector3 v4 = v2 + bridge;
 
+            // Modify v3 and v4 to account for elevation
+            v3.y = v4.y = neighbor.Elevation * HexMetrics.elevationStep;
+
             AddQuad(v1, v2, v3, v4);
 
             // Blended colors for the quad
@@ -90,7 +100,11 @@ namespace TheZooMustGrow
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
             if (direction <= HexDirection.E && nextNeighbor != null)
             {
-                AddTriangle(v2, v4, v2 + HexMetrics.GetBridge(direction.Next()));
+                // Modify for elevation
+                Vector3 v5 = v2 + HexMetrics.GetBridge(direction.Next());
+                v5.y = nextNeighbor.Elevation * HexMetrics.elevationStep;
+
+                AddTriangle(v2, v4, v5);
                 AddTriangleColor(cell.color, neighbor.color, nextNeighbor.color);
             }
         }

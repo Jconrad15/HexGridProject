@@ -9,7 +9,9 @@ namespace TheZooMustGrow
     {
         public Color[] colors;
         public HexGrid hexGrid;
+
         private Color activeColor;
+        private int activeElevation;
 
         private void Awake()
         {
@@ -31,15 +33,25 @@ namespace TheZooMustGrow
             RaycastHit hit;
             if (Physics.Raycast(inputRay, out hit))
             {
-                hexGrid.ColorCell(hit.point, activeColor);
+                EditCell(hexGrid.GetCell(hit.point));
             }
+        }
+
+        void EditCell(HexCell cell)
+        {
+            cell.color = activeColor;
+            cell.Elevation = activeElevation;
+            hexGrid.Refresh();
+        }
+
+        public void SetElevation(float elevation)
+        {
+            activeElevation = (int)elevation;
         }
 
         public void SelectColor(int index)
         {
             activeColor = colors[index];
         }
-
-
     }
 }
