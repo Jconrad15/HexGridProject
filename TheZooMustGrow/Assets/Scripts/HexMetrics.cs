@@ -73,5 +73,27 @@ namespace TheZooMustGrow
             float h = step * HexMetrics.horizontalTerraceStepSize;
             return Color.Lerp(a, b, h);
         }
+
+        /// <summary>
+        /// Returns the edge type based on the elecation difference between two HexCells.
+        /// </summary>
+        /// <param name="elevation1"></param>
+        /// <param name="elevation2"></param>
+        /// <returns></returns>
+        public static HexEdgeType GetEdgeType(int elevation1, int elevation2)
+        {
+            if (elevation1 == elevation2)
+            {
+                return HexEdgeType.Flat;
+            }
+
+            int delta = elevation2 - elevation1;
+            if (delta == 1 || delta == -1)
+            {
+                return HexEdgeType.Slope;
+            }
+
+            return HexEdgeType.Cliff;
+        }
     }
 }

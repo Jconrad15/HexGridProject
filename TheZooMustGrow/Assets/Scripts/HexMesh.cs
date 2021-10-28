@@ -91,11 +91,16 @@ namespace TheZooMustGrow
             // Modify v3 and v4 to account for elevation
             v3.y = v4.y = neighbor.Elevation * HexMetrics.elevationStep;
 
-            TriangulateEdgeTerraces(v1, v2, cell, v3, v4, neighbor);
-
-            //AddQuad(v1, v2, v3, v4);
-            // Blended colors for the quad
-            //AddQuadColor(cell.color, neighbor.color);
+            // Check edge type
+            if (cell.GetEdgeType(direction) == HexEdgeType.Slope)
+            {
+                TriangulateEdgeTerraces(v1, v2, cell, v3, v4, neighbor);
+            }
+            else
+            {
+                AddQuad(v1, v2, v3, v4);
+                AddQuadColor(cell.color, neighbor.color);
+            }
 
             // Add triangular holes/corners for all NE and E neighbors
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
