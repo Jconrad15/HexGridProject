@@ -13,6 +13,14 @@ namespace TheZooMustGrow
 
         public RectTransform uiRect;
 
+        public Vector3 Position
+        {
+            get
+            {
+                return transform.localPosition;
+            }
+        }
+
         public int Elevation
         {
             get { return elevation; }
@@ -23,6 +31,10 @@ namespace TheZooMustGrow
                 // Adjust the actual height of the mesh
                 Vector3 position = transform.localPosition;
                 position.y = value * HexMetrics.elevationStep;
+                // Perturb the y value
+                position.y +=
+                    (HexMetrics.SampleNoise(position).y * 2f - 1f) *
+                    HexMetrics.elevationPerturbStrength;
                 transform.localPosition = position;
 
                 // Adjust the height of the UI label
@@ -63,6 +75,7 @@ namespace TheZooMustGrow
         {
             return HexMetrics.GetEdgeType(elevation, otherCell.elevation);
         }
+
 
     }
 }

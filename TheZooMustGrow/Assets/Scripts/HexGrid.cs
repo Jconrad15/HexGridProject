@@ -103,6 +103,9 @@ namespace TheZooMustGrow
 
             // Assign label rect to the HexCell
             cell.uiRect = label.rectTransform;
+
+            // Set initial elevation to 0, this also perturbs y values
+            cell.Elevation = 0;
         }
 
         public HexCell GetCell(Vector3 position)

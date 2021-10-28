@@ -24,6 +24,8 @@ namespace TheZooMustGrow
         // Scale the noise sampling so the texture covers a much larger area in worldspace
         public const float noiseScale = 0.003f;
 
+        public const float elevationPerturbStrength = 1.5f;
+
         // Hex corners on the XZ plane
         private static Vector3[] corners = {
 			new Vector3(0f, 0f, outerRadius),
