@@ -13,6 +13,44 @@ namespace TheZooMustGrow
 
         public HexGridChunk chunk;
 
+        #region RIVER PROPERTIES
+        bool hasIncomingRiver, hasOutgoingRiver;
+        HexDirection incomingRiver, outgoingRiver;
+
+        public bool HasIncomingRiver
+        {
+            get { return hasIncomingRiver; }
+        }
+
+        public bool HasOutgoingRiver
+        {
+            get { return hasOutgoingRiver; }
+        }
+
+        public HexDirection IncomingRiver
+        {
+            get { return incomingRiver; }
+        }
+
+        public HexDirection OutgoingRiver
+        {
+            get { return outgoingRiver; }
+        }
+
+        public bool HasRiver
+        {
+            get { return hasIncomingRiver || hasOutgoingRiver; }
+        }
+
+        public bool HasRiverBeginOrEnd
+        {
+            get
+            {
+                return hasIncomingRiver != hasOutgoingRiver;
+            }
+        }
+        #endregion
+
         public Vector3 Position
         {
             get
@@ -44,6 +82,19 @@ namespace TheZooMustGrow
                 Vector3 uiPosition = uiRect.localPosition;
                 uiPosition.z = (elevation * -HexMetrics.elevationStep) - HexMetrics.labelOffset;
                 uiRect.localPosition = uiPosition;
+
+                // Remove rivers if they change to flowing uphill due to elevation change
+                if (hasOutgoingRiver &&
+                    elevation < GetNeighbor(outgoingRiver).elevation)
+                {
+                    RemoveOutgoingRiver();
+                }
+
+                if (hasIncomingRiver &&
+                    elevation > GetNeighbor(incomingRiver).elevation)
+                {
+                    RemoveIncomingRiver();
+                }
 
                 Refresh();
             }
@@ -109,5 +160,89 @@ namespace TheZooMustGrow
                 }
             }
         }
+
+        /// <summary>
+        /// Returns true if there is a river going through 
+        /// the edge at the provided direction. 
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public bool HasRiverThroughEdge(HexDirection direction)
+        {
+            return
+                hasIncomingRiver && incomingRiver == direction ||
+                hasOutgoingRiver && outgoingRiver == direction;
+        }
+
+        public void RemoveOutgoingRiver()
+        {
+            if (!hasOutgoingRiver)
+            {
+                return;
+            }
+            hasOutgoingRiver = false;
+            RefreshSelfOnly();
+
+            // Also need to remove the neighbors incoming river
+            HexCell neighbor = GetNeighbor(outgoingRiver);
+            neighbor.hasIncomingRiver = false;
+            neighbor.RefreshSelfOnly();
+        }
+
+        public void RemoveIncomingRiver()
+        {
+            if (!hasIncomingRiver)
+            {
+                return;
+            }
+            hasIncomingRiver = false;
+            RefreshSelfOnly();
+
+            HexCell neighbor = GetNeighbor(incomingRiver);
+            neighbor.hasOutgoingRiver = false;
+            neighbor.RefreshSelfOnly();
+        }
+
+        public void RemoveRiver()
+        {
+            RemoveOutgoingRiver();
+            RemoveIncomingRiver();
+        }
+
+        void RefreshSelfOnly()
+        {
+            chunk.Refresh();
+        }
+
+        public void SetOutgoingRiver(HexDirection direction)
+        {
+            if (hasOutgoingRiver && outgoingRiver == direction)
+            { return; }
+
+            HexCell neighbor = GetNeighbor(direction);
+            // Abort if there is no neighbor
+            // Abort if the neighbor is uphill
+            if (!neighbor || elevation < neighbor.elevation)
+            { return; }
+
+            // Clear any previous outgoing river
+            RemoveOutgoingRiver();
+            // Clear any previous incoming river if it overlaps the new outgoing river
+            if (hasIncomingRiver && incomingRiver == direction)
+            {
+                RemoveIncomingRiver();
+            }
+
+            // Set the outgoing river
+            hasOutgoingRiver = true;
+            outgoingRiver = direction;
+            RefreshSelfOnly();
+
+            // Set the incoming river of the next cell
+            neighbor.RemoveIncomingRiver();
+            neighbor.incomingRiver = direction.Opposite();
+            neighbor.RefreshSelfOnly();
+        }
+
     }
 }
