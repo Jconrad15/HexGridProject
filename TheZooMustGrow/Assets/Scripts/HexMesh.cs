@@ -91,10 +91,11 @@ namespace TheZooMustGrow
             // Modify v3 and v4 to account for elevation
             v3.y = v4.y = neighbor.Elevation * HexMetrics.elevationStep;
 
-            AddQuad(v1, v2, v3, v4);
+            TriangulateEdgeTerraces(v1, v2, cell, v3, v4, neighbor);
 
+            //AddQuad(v1, v2, v3, v4);
             // Blended colors for the quad
-            AddQuadColor(cell.color, neighbor.color);
+            //AddQuadColor(cell.color, neighbor.color);
 
             // Add triangular holes/corners for all NE and E neighbors
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
@@ -107,6 +108,42 @@ namespace TheZooMustGrow
                 AddTriangle(v2, v4, v5);
                 AddTriangleColor(cell.color, neighbor.color, nextNeighbor.color);
             }
+        }
+
+        void TriangulateEdgeTerraces(
+            Vector3 beginLeft, Vector3 beginRight, HexCell beginCell,
+            Vector3 endLeft, Vector3 endRight, HexCell endCell)
+        {
+
+            Vector3 v3 = HexMetrics.TerraceLerp(beginLeft, endLeft, 1);
+            Vector3 v4 = HexMetrics.TerraceLerp(beginRight, endRight, 1);
+            Color c2 = HexMetrics.TerraceLerp(beginCell.color, endCell.color, 1);
+
+            // First slope
+            AddQuad(beginLeft, beginRight, v3, v4);
+            AddQuadColor(beginCell.color, c2);
+
+            for (int i = 2; i < HexMetrics.terraceSteps; i++)
+            {
+                // Start the next portion where the last portion ended
+                Vector3 v1 = v3;
+                Vector3 v2 = v4;
+                Color c1 = c2;
+
+                // Determine ending point
+                v3 = HexMetrics.TerraceLerp(beginLeft, endLeft, i);
+                v4 = HexMetrics.TerraceLerp(beginRight, endRight, i);
+                c2 = HexMetrics.TerraceLerp(beginCell.color, endCell.color, i);
+
+                // Add the quad
+                AddQuad(v1, v2, v3, v4);
+                AddQuadColor(c1, c2);
+            }
+
+            // Last slope
+            AddQuad(v3, v4, endLeft, endRight);
+            AddQuadColor(c2, endCell.color);
+
         }
 
         void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
