@@ -41,5 +41,11 @@ namespace TheZooMustGrow
         {
             return corners[(int)direction + 1] * solidFactor;
         }
+
+        public static Vector3 GetBridge(HexDirection direction)
+        {
+            return 0.5f * blendFactor *
+                (corners[(int)direction] + corners[(int)direction + 1]);
+        }
     }
 }
