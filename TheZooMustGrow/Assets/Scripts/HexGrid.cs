@@ -54,6 +54,38 @@ namespace TheZooMustGrow
             cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
             cell.color = defaultColor;
 
+            // Set neighboring HexCells
+            // East/west neighbors
+            if (x > 0)
+            {
+                cell.SetNeighbor(HexDirection.W, cells[i - 1]);
+            }
+            // SE/SW
+            if (z > 0)
+            {
+                // Use the binary AND as a mask, ignoring everything except the first bit.
+                // If the result is 0, then it is an even number.
+                if ((z & 1) == 0)
+                {
+                    // For the even rows
+                    cell.SetNeighbor(HexDirection.SE, cells[i - width]);
+                    if (x > 0)
+                    {
+                        cell.SetNeighbor(HexDirection.SW, cells[i - width - 1]);
+                    }
+                }
+                else
+                {
+                    // For the odd rows
+                    cell.SetNeighbor(HexDirection.SW, cells[i - width]);
+                    if (x < width - 1)
+                    {
+                        cell.SetNeighbor(HexDirection.SE, cells[i - width + 1]);
+                    }
+                }
+            }
+
+
             // Create label
             TextMeshProUGUI label = Instantiate(cellLabelPrefab);
             label.rectTransform.SetParent(gridCanvas.transform, false);
