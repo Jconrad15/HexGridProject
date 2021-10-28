@@ -23,7 +23,7 @@ namespace TheZooMustGrow
         public const float noiseScale = 0.003f;
         public const float elevationPerturbStrength = 1.5f;
 
-        public const float labelOffset = 0.5f;
+        public const float labelOffset = 0.8f;
 
         public const int chunkSizeX = 5, chunkSizeZ = 5;
 
