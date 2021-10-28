@@ -7,6 +7,13 @@ namespace TheZooMustGrow
 {
     public class HexMapEditor : MonoBehaviour
     {
+        enum OptionalToggle
+        {
+            Ignore, Yes, No
+        }
+
+        OptionalToggle riverMode;
+
         public Color[] colors;
         public HexGrid hexGrid;
 
@@ -17,6 +24,10 @@ namespace TheZooMustGrow
         bool applyElevation = true;
 
         int brushSize;
+
+        bool isDrag;
+        HexDirection dragDirection;
+        HexCell previousCell;
 
         private void Awake()
         {
@@ -30,6 +41,10 @@ namespace TheZooMustGrow
             {
                 HandleInput();
             }
+            else
+            {
+                previousCell = null;
+            }
         }
 
         private void HandleInput()
@@ -38,8 +53,40 @@ namespace TheZooMustGrow
             RaycastHit hit;
             if (Physics.Raycast(inputRay, out hit))
             {
-                EditCells(hexGrid.GetCell(hit.point));
+                HexCell currentCell = hexGrid.GetCell(hit.point);
+
+                // Check for a drag
+                if (previousCell && previousCell != currentCell)
+                {
+                    ValidateDrag(currentCell);
+                }
+                else
+                {
+                    isDrag = false;
+                }
+
+                EditCells(currentCell);
+                previousCell = currentCell;
             }
+            else
+            {
+                previousCell = null;
+            }
+        }
+
+        void ValidateDrag(HexCell currentCell)
+        {
+            for (dragDirection = HexDirection.NE;
+                dragDirection <= HexDirection.NW;
+                dragDirection++)
+            {
+                if (previousCell.GetNeighbor(dragDirection) == currentCell)
+                {
+                    isDrag = true;
+                    return;
+                }
+            }
+            isDrag = false;
         }
 
         private void EditCells(HexCell center)
@@ -78,6 +125,19 @@ namespace TheZooMustGrow
                 {
                     cell.Elevation = activeElevation;
                 }
+
+                if (riverMode == OptionalToggle.No)
+                {
+                    cell.RemoveRiver();
+                }
+                else if (isDrag && riverMode == OptionalToggle.Yes)
+                {
+                    HexCell otherCell = cell.GetNeighbor(dragDirection.Opposite());
+                    if (otherCell)
+                    {
+                        otherCell.SetOutgoingRiver(dragDirection);
+                    }
+                }
             }
         }
 
@@ -103,6 +163,11 @@ namespace TheZooMustGrow
         public void SetBrushSize(float size)
         {
             brushSize = (int)size;
+        }
+
+        public void SetRiverMode(int mode)
+        {
+            riverMode = (OptionalToggle)mode;
         }
 
         public void ShowUI(bool visible)
