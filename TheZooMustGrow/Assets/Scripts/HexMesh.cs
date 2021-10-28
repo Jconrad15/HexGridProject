@@ -45,21 +45,32 @@ namespace TheZooMustGrow
             meshCollider.sharedMesh = hexMesh;
         }
 
-        private void Triangulate(HexCell cell)
+        void Triangulate(HexCell cell)
+        {
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                Triangulate(d, cell);
+            }
+        }
+
+        void Triangulate(HexDirection direction, HexCell cell)
         {
             Vector3 center = cell.transform.localPosition;
+            AddTriangle(
+                center,
+                center + HexMetrics.GetFirstCorner(direction),
+                center + HexMetrics.GetSecondCorner(direction)
+            );
+            
+            HexCell prevNeighbor = cell.GetNeighbor(direction.Previous()) ?? cell;
+            HexCell neighbor = cell.GetNeighbor(direction) ?? cell;
+            HexCell nextNeighbor = cell.GetNeighbor(direction.Next()) ?? cell;
 
-            // Add six triangles for the hexagon
-            for (int i = 0; i < 6; i++)
-            {
-                AddTriangle(
-                    center,
-                    center + HexMetrics.corners[i],
-                    center + HexMetrics.corners[i + 1]
-                );
-                AddTriangleColor(cell.color);
-            }
-
+            AddTriangleColor(
+                cell.color,
+                (cell.color + prevNeighbor.color + neighbor.color) / 3f,
+                (cell.color + neighbor.color + nextNeighbor.color) / 3f
+            );
         }
 
         void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
@@ -74,12 +85,29 @@ namespace TheZooMustGrow
             triangles.Add(vertexIndex + 2);
         }
 
+        /// <summary>
+        /// Add the same color to each vertex.
+        /// </summary>
+        /// <param name="color"></param>
         void AddTriangleColor(Color color)
         {
             // Three vertices per triangle
             colors.Add(color);
             colors.Add(color);
             colors.Add(color);
+        }
+
+        /// <summary>
+        /// Add a different color to each vertex.  
+        /// </summary>
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        /// <param name="c3"></param>
+        void AddTriangleColor(Color c1, Color c2, Color c3)
+        {
+            colors.Add(c1);
+            colors.Add(c2);
+            colors.Add(c3);
         }
 
     }
