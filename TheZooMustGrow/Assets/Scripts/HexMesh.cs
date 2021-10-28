@@ -56,19 +56,40 @@ namespace TheZooMustGrow
         void Triangulate(HexDirection direction, HexCell cell)
         {
             Vector3 center = cell.Position;
-            Vector3 v1 = center + HexMetrics.GetFirstSolidCorner(direction);
-            Vector3 v2 = center + HexMetrics.GetSecondSolidCorner(direction);
+            EdgeVertices e = new EdgeVertices(
+                center + HexMetrics.GetFirstSolidCorner(direction),
+                center + HexMetrics.GetSecondSolidCorner(direction)
+            );
 
-            AddTriangle(center, v1, v2);
-
-            // Solid color for the triangle
-            AddTriangleColor(cell.color);
+            TriangulateEdgeFan(center, e, cell.color);
 
             // Add a connection to neighboring hex cell if it is NE, E, and SE
             if (direction <= HexDirection.SE)
             {
-                TriangulateConnection(direction, cell, v1, v2);
+                TriangulateConnection(direction, cell, e);
             }
+        }
+
+        void TriangulateEdgeFan(Vector3 center, EdgeVertices edge, Color color)
+        {
+            AddTriangle(center, edge.v1, edge.v2);
+            AddTriangleColor(color);
+            AddTriangle(center, edge.v2, edge.v3);
+            AddTriangleColor(color);
+            AddTriangle(center, edge.v3, edge.v4);
+            AddTriangleColor(color);
+        }
+
+        void TriangulateEdgeStrip(
+            EdgeVertices e1, Color c1,
+            EdgeVertices e2, Color c2)
+        {
+            AddQuad(e1.v1, e1.v2, e2.v1, e2.v2);
+            AddQuadColor(c1, c2);
+            AddQuad(e1.v2, e1.v3, e2.v2, e2.v3);
+            AddQuadColor(c1, c2);
+            AddQuad(e1.v3, e1.v4, e2.v3, e2.v4);
+            AddQuadColor(c1, c2);
         }
 
         /// <summary>
@@ -79,27 +100,26 @@ namespace TheZooMustGrow
         /// <param name="v1"></param>
         /// <param name="v2"></param>
         void TriangulateConnection(
-            HexDirection direction, HexCell cell, Vector3 v1, Vector3 v2)
+            HexDirection direction, HexCell cell, EdgeVertices e1)
         {
             HexCell neighbor = cell.GetNeighbor(direction);
             if (neighbor == null) { return; }
 
             Vector3 bridge = HexMetrics.GetBridge(direction);
-            Vector3 v3 = v1 + bridge;
-            Vector3 v4 = v2 + bridge;
-
-            // Modify v3 and v4 to account for elevation
-            v3.y = v4.y = neighbor.Position.y;
+            bridge.y = neighbor.Position.y - cell.Position.y;
+            EdgeVertices e2 = new EdgeVertices(
+                e1.v1 + bridge,
+                e1.v4 + bridge
+            );
 
             // Check edge type
             if (cell.GetEdgeType(direction) == HexEdgeType.Slope)
             {
-                TriangulateEdgeTerraces(v1, v2, cell, v3, v4, neighbor);
+                TriangulateEdgeTerraces(e1, cell, e2, neighbor);
             }
             else
             {
-                AddQuad(v1, v2, v3, v4);
-                AddQuadColor(cell.color, neighbor.color);
+                TriangulateEdgeStrip(e1, cell.color, e2, neighbor.color);
             }
 
             // Add triangular holes/corners for all NE and E neighbors
@@ -107,7 +127,7 @@ namespace TheZooMustGrow
             if (direction <= HexDirection.E && nextNeighbor != null)
             {
                 // Modify for elevation
-                Vector3 v5 = v2 + HexMetrics.GetBridge(direction.Next());
+                Vector3 v5 = e1.v4 + HexMetrics.GetBridge(direction.Next());
                 v5.y = nextNeighbor.Position.y;
 
                 // Determine which cell is the lowest
@@ -115,24 +135,21 @@ namespace TheZooMustGrow
                 {
                     if(cell.Elevation <= nextNeighbor.Elevation)
                     {
-                        TriangulateCorner(v2, cell, v4, neighbor, v5, nextNeighbor);
+                        TriangulateCorner(e1.v4, cell, e2.v4, neighbor, v5, nextNeighbor);
                     }
                     else
                     {
-                        TriangulateCorner(v5, nextNeighbor, v2, cell, v4, neighbor);
+                        TriangulateCorner(v5, nextNeighbor, e1.v4, cell, e2.v4, neighbor);
                     }
                 }
                 else if (neighbor.Elevation <= nextNeighbor.Elevation)
                 {
-                    TriangulateCorner(v4, neighbor, v5, nextNeighbor, v2, cell);
+                    TriangulateCorner(e2.v4, neighbor, v5, nextNeighbor, e1.v4, cell);
                 }
                 else
                 {
-                    TriangulateCorner(v5, nextNeighbor, v2, cell, v4, neighbor);
+                    TriangulateCorner(v5, nextNeighbor, e1.v4, cell, e2.v4, neighbor);
                 }
-
-                /*AddTriangle(v2, v4, v5);
-                AddTriangleColor(cell.color, neighbor.color, nextNeighbor.color);*/
             }
         }
 
@@ -341,39 +358,31 @@ namespace TheZooMustGrow
         }
 
         void TriangulateEdgeTerraces(
-            Vector3 beginLeft, Vector3 beginRight, HexCell beginCell,
-            Vector3 endLeft, Vector3 endRight, HexCell endCell)
+            EdgeVertices begin, HexCell beginCell,
+            EdgeVertices end, HexCell endCell)
         {
-
-            Vector3 v3 = HexMetrics.TerraceLerp(beginLeft, endLeft, 1);
-            Vector3 v4 = HexMetrics.TerraceLerp(beginRight, endRight, 1);
+            EdgeVertices e2 = EdgeVertices.TerraceLerp(begin, end, 1);
             Color c2 = HexMetrics.TerraceLerp(beginCell.color, endCell.color, 1);
 
             // First slope
-            AddQuad(beginLeft, beginRight, v3, v4);
-            AddQuadColor(beginCell.color, c2);
+            TriangulateEdgeStrip(begin, beginCell.color, e2, c2);
 
             for (int i = 2; i < HexMetrics.terraceSteps; i++)
             {
                 // Start the next portion where the last portion ended
-                Vector3 v1 = v3;
-                Vector3 v2 = v4;
+                EdgeVertices e1 = e2;
                 Color c1 = c2;
 
                 // Determine ending point
-                v3 = HexMetrics.TerraceLerp(beginLeft, endLeft, i);
-                v4 = HexMetrics.TerraceLerp(beginRight, endRight, i);
+                e2 = EdgeVertices.TerraceLerp(begin, end, i);
                 c2 = HexMetrics.TerraceLerp(beginCell.color, endCell.color, i);
 
                 // Add the quad
-                AddQuad(v1, v2, v3, v4);
-                AddQuadColor(c1, c2);
+                TriangulateEdgeStrip(e1, c1, e2, c2);
             }
 
             // Last slope
-            AddQuad(v3, v4, endLeft, endRight);
-            AddQuadColor(c2, endCell.color);
-
+            TriangulateEdgeStrip(e2, c2, end, endCell.color);
         }
 
         void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
