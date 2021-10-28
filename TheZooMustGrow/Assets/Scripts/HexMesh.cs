@@ -75,9 +75,23 @@ namespace TheZooMustGrow
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next()) ?? cell;
 
             // Blended colors for the quad
-            AddQuadColor(
+            Color bridgeColor = (cell.color + neighbor.color) * 0.5f;
+            AddQuadColor(cell.color, bridgeColor);
+
+            // Add triangle hole areas and color them
+            // First small triangle
+            AddTriangle(v1, center + HexMetrics.GetFirstCorner(direction), v3);
+            AddTriangleColor(
                 cell.color,
-                (cell.color + neighbor.color) * 0.5f                
+                (cell.color + prevNeighbor.color + neighbor.color) / 3f,
+                bridgeColor
+            );
+            // Second small triangle
+            AddTriangle(v2, v4, center + HexMetrics.GetSecondCorner(direction));
+            AddTriangleColor(
+                cell.color,
+                bridgeColor,
+                (cell.color + neighbor.color + nextNeighbor.color) / 3f
             );
         }
 
