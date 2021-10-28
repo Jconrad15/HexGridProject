@@ -62,6 +62,12 @@ namespace TheZooMustGrow
                 center + HexMetrics.GetSecondSolidCorner(direction)
             );
 
+            // Check if there is a river
+            if (cell.HasRiverThroughEdge(direction))
+            {
+                e.v3.y = cell.StreamBedY;
+            }
+
             TriangulateEdgeFan(center, e, cell.Color);
 
             // Add a connection to neighboring hex cell if it is NE, E, and SE
@@ -79,6 +85,8 @@ namespace TheZooMustGrow
             AddTriangleColor(color);
             AddTriangle(center, edge.v3, edge.v4);
             AddTriangleColor(color);
+            AddTriangle(center, edge.v4, edge.v5);
+            AddTriangleColor(color);
         }
 
         void TriangulateEdgeStrip(
@@ -90,6 +98,8 @@ namespace TheZooMustGrow
             AddQuad(e1.v2, e1.v3, e2.v2, e2.v3);
             AddQuadColor(c1, c2);
             AddQuad(e1.v3, e1.v4, e2.v3, e2.v4);
+            AddQuadColor(c1, c2);
+            AddQuad(e1.v4, e1.v5, e2.v4, e2.v5);
             AddQuadColor(c1, c2);
         }
 
@@ -110,8 +120,14 @@ namespace TheZooMustGrow
             bridge.y = neighbor.Position.y - cell.Position.y;
             EdgeVertices e2 = new EdgeVertices(
                 e1.v1 + bridge,
-                e1.v4 + bridge
+                e1.v5 + bridge
             );
+
+            // Check for river through connection
+            if (cell.HasRiverThroughEdge(direction))
+            {
+                e2.v3.y = neighbor.StreamBedY;
+            }
 
             // Check edge type
             if (cell.GetEdgeType(direction) == HexEdgeType.Slope)
@@ -128,7 +144,7 @@ namespace TheZooMustGrow
             if (direction <= HexDirection.E && nextNeighbor != null)
             {
                 // Modify for elevation
-                Vector3 v5 = e1.v4 + HexMetrics.GetBridge(direction.Next());
+                Vector3 v5 = e1.v5 + HexMetrics.GetBridge(direction.Next());
                 v5.y = nextNeighbor.Position.y;
 
                 // Determine which cell is the lowest
@@ -136,20 +152,20 @@ namespace TheZooMustGrow
                 {
                     if(cell.Elevation <= nextNeighbor.Elevation)
                     {
-                        TriangulateCorner(e1.v4, cell, e2.v4, neighbor, v5, nextNeighbor);
+                        TriangulateCorner(e1.v5, cell, e2.v5, neighbor, v5, nextNeighbor);
                     }
                     else
                     {
-                        TriangulateCorner(v5, nextNeighbor, e1.v4, cell, e2.v4, neighbor);
+                        TriangulateCorner(v5, nextNeighbor, e1.v5, cell, e2.v5, neighbor);
                     }
                 }
                 else if (neighbor.Elevation <= nextNeighbor.Elevation)
                 {
-                    TriangulateCorner(e2.v4, neighbor, v5, nextNeighbor, e1.v4, cell);
+                    TriangulateCorner(e2.v5, neighbor, v5, nextNeighbor, e1.v5, cell);
                 }
                 else
                 {
-                    TriangulateCorner(v5, nextNeighbor, e1.v4, cell, e2.v4, neighbor);
+                    TriangulateCorner(v5, nextNeighbor, e1.v5, cell, e2.v5, neighbor);
                 }
             }
         }

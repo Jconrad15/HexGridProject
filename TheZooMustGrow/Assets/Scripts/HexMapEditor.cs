@@ -36,7 +36,7 @@ namespace TheZooMustGrow
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0) &&
+            if (Input.GetMouseButton(0) &&
                 !EventSystem.current.IsPointerOverGameObject())
             {
                 HandleInput();
@@ -76,6 +76,7 @@ namespace TheZooMustGrow
 
         void ValidateDrag(HexCell currentCell)
         {
+            Debug.Log("Validate Drag");
             for (dragDirection = HexDirection.NE;
                 dragDirection <= HexDirection.NW;
                 dragDirection++)
@@ -94,7 +95,7 @@ namespace TheZooMustGrow
             int centerX = center.coordinates.X;
             int centerZ = center.coordinates.Z;
 
-            // For the bottom half of the HexCells
+            // For the bottom half of the HexCells in the brush size
             for (int r = 0, z = centerZ - brushSize; z <= centerZ; z++, r++)
             {
                 for (int x = centerX - r; x <= centerX + brushSize; x++)
@@ -102,7 +103,7 @@ namespace TheZooMustGrow
                     EditCell(hexGrid.GetCell(new HexCoordinates(x, z)));
                 }
             }
-            // For the top half excluding the middle row of the HexCells
+            // For the top half excluding the middle row of the HexCells in the brush size
             for (int r = 0, z = centerZ + brushSize; z > centerZ; z--, r++)
             {
                 for (int x = centerX - brushSize; x <= centerX + r; x++)

@@ -49,6 +49,15 @@ namespace TheZooMustGrow
                 return hasIncomingRiver != hasOutgoingRiver;
             }
         }
+
+        public float StreamBedY
+        {
+            get
+            {
+                return (elevation + HexMetrics.streamBedElevationOffset) *
+                        HexMetrics.elevationStep;
+            }
+        }
         #endregion
 
         public Vector3 Position
