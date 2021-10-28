@@ -348,7 +348,7 @@ namespace TheZooMustGrow
                 c2 = HexMetrics.TerraceLerp(beginCell.color, leftCell.color, i);
 
                 // Add the triangle
-                AddTriangleUnperturbed(Perturb(v1), v2, boundary);
+                AddTriangleUnperturbed(v1, v2, boundary);
                 AddTriangleColor(c1, c2, boundaryColor);
             }
 
