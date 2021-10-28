@@ -18,7 +18,6 @@ namespace TheZooMustGrow
         HexMesh hexMesh;
 
         public Color defaultColor = Color.white;
-        public Color touchedColor = Color.magenta;
 
         private void Awake()
         {
@@ -64,32 +63,15 @@ namespace TheZooMustGrow
 
         }
 
-        private void Update()
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                HandleInput();
-            }
-        }
 
-        private void HandleInput()
-        {
-            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(inputRay, out hit))
-            {
-                TouchCell(hit.point);
-            }
-        }
-
-        private void TouchCell(Vector3 position)
+        public void ColorCell(Vector3 position, Color color)
         {
             position = transform.InverseTransformPoint(position);
             HexCoordinates coordinates = HexCoordinates.FromPosition(position);
 
             int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
             HexCell cell = cells[index];
-            cell.color = touchedColor;
+            cell.color = color;
             hexMesh.Triangulate(cells);
 
             Debug.Log("Touched at " + coordinates.ToString());
