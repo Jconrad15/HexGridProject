@@ -64,35 +64,35 @@ namespace TheZooMustGrow
             // Solid color for the triangle
             AddTriangleColor(cell.color);
 
+            // Add a connection to neighboring hex cell if it is NE, E, and SE
+            if (direction <= HexDirection.SE)
+            {
+                TriangulateConnection(direction, cell, v1, v2);
+            }
+        }
+
+        void TriangulateConnection(
+            HexDirection direction, HexCell cell, Vector3 v1, Vector3 v2)
+        {
+            HexCell neighbor = cell.GetNeighbor(direction);
+            if (neighbor == null) { return; }
+
             Vector3 bridge = HexMetrics.GetBridge(direction);
             Vector3 v3 = v1 + bridge;
             Vector3 v4 = v2 + bridge;
 
             AddQuad(v1, v2, v3, v4);
 
-            HexCell prevNeighbor = cell.GetNeighbor(direction.Previous()) ?? cell;
-            HexCell neighbor = cell.GetNeighbor(direction) ?? cell;
-            HexCell nextNeighbor = cell.GetNeighbor(direction.Next()) ?? cell;
-
             // Blended colors for the quad
-            Color bridgeColor = (cell.color + neighbor.color) * 0.5f;
-            AddQuadColor(cell.color, bridgeColor);
+            AddQuadColor(cell.color, neighbor.color);
 
-            // Add triangle hole areas and color them
-            // First small triangle
-            AddTriangle(v1, center + HexMetrics.GetFirstCorner(direction), v3);
-            AddTriangleColor(
-                cell.color,
-                (cell.color + prevNeighbor.color + neighbor.color) / 3f,
-                bridgeColor
-            );
-            // Second small triangle
-            AddTriangle(v2, v4, center + HexMetrics.GetSecondCorner(direction));
-            AddTriangleColor(
-                cell.color,
-                bridgeColor,
-                (cell.color + neighbor.color + nextNeighbor.color) / 3f
-            );
+            // Add triangular holes/corners for all NE and E neighbors
+            HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
+            if (direction <= HexDirection.E && nextNeighbor != null)
+            {
+                AddTriangle(v2, v4, v2 + HexMetrics.GetBridge(direction.Next()));
+                AddTriangleColor(cell.color, neighbor.color, nextNeighbor.color);
+            }
         }
 
         void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
