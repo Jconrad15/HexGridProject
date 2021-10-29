@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 3941924670121687819}
   - component: {fileID: 3127306524169906391}
   m_Layer: 0
-  m_Name: Hex Mesh
+  m_Name: Terain (HexMesh)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -175,6 +175,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc47f740884e5a340ad1e3ef3b399fee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useCollider: 1
+  useColors: 1
 --- !u!1 &5451625982730989715
 GameObject:
   m_ObjectHideFlags: 0
@@ -220,3 +222,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe06036f4691747489e252ffb56ac662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  terrain: {fileID: 3127306524169906391}

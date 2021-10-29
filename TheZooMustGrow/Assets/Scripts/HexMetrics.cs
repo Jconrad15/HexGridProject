@@ -76,12 +76,12 @@ namespace TheZooMustGrow
 
         public static Vector3 TerraceLerp(Vector3 a, Vector3 b, int step)
         {
-            float h = step * HexMetrics.horizontalTerraceStepSize;
+            float h = step * horizontalTerraceStepSize;
             a.x += (b.x - a.x) * h;
             a.z += (b.z - a.z) * h;
 
             // To adjust Y on odd steps use (step+1)/2
-            float v = ((step + 1) / 2) * HexMetrics.verticalTerraceStepSize;
+            float v = ((step + 1) / 2) * verticalTerraceStepSize;
             a.y += (b.y - a.y) * v;
 
             return a;
@@ -89,7 +89,7 @@ namespace TheZooMustGrow
 
         public static Color TerraceLerp(Color a, Color b, int step)
         {
-            float h = step * HexMetrics.horizontalTerraceStepSize;
+            float h = step * horizontalTerraceStepSize;
             return Color.Lerp(a, b, h);
         }
 
@@ -123,6 +123,12 @@ namespace TheZooMustGrow
             );
         }
 
-
+        public static Vector3 Perturb(Vector3 position)
+        {
+            Vector4 sample = SampleNoise(position);
+            position.x += ((sample.x * 2f) - 1f) * cellPerturbStrength;
+            position.z += ((sample.z * 2f) - 1f) * cellPerturbStrength;
+            return position;
+        }
     }
 }
