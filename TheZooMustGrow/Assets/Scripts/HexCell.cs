@@ -58,6 +58,16 @@ namespace TheZooMustGrow
                         HexMetrics.elevationStep;
             }
         }
+
+        public float RiverSurfaceY
+        {
+            get
+            {
+                return
+                    (elevation + HexMetrics.riverSurfaceElevationOffset) *
+                    HexMetrics.elevationStep;
+            }
+        }
         #endregion
 
         public Vector3 Position
