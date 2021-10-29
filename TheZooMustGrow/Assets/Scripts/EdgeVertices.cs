@@ -15,6 +15,21 @@ namespace TheZooMustGrow
 			v5 = corner2;
 		}
 
+		/// <summary>
+		/// Alternative interpolation method.
+		/// </summary>
+		/// <param name="corner1"></param>
+		/// <param name="corner2"></param>
+		/// <param name="outerStep"></param>
+		public EdgeVertices(Vector3 corner1, Vector3 corner2, float outerStep)
+		{
+			v1 = corner1;
+			v2 = Vector3.Lerp(corner1, corner2, outerStep);
+			v3 = Vector3.Lerp(corner1, corner2, 0.5f);
+			v4 = Vector3.Lerp(corner1, corner2, 1f - outerStep);
+			v5 = corner2;
+		}
+
 		public static EdgeVertices TerraceLerp(
 		EdgeVertices a, EdgeVertices b, int step)
 		{
@@ -26,6 +41,7 @@ namespace TheZooMustGrow
 			result.v5 = HexMetrics.TerraceLerp(a.v5, b.v5, step);
 			return result;
 		}
+
 
 	}
 }

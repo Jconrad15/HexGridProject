@@ -63,18 +63,118 @@ namespace TheZooMustGrow
             );
 
             // Check if there is a river
-            if (cell.HasRiverThroughEdge(direction))
+            if (cell.HasRiver)
             {
-                e.v3.y = cell.StreamBedY;
-            }
+                if (cell.HasRiverThroughEdge(direction))
+                {
+                    e.v3.y = cell.StreamBedY;
 
-            TriangulateEdgeFan(center, e, cell.Color);
+                    // Check if this the beginning or end of a river
+                    if (cell.HasRiverBeginOrEnd)
+                    {
+                        TriangulateWithRiverBeginOrEnd(direction, cell, center, e);
+                    }
+                    else
+                    {
+                        TriangulateWithRiver(direction, cell, center, e);
+                    }
+                }
+            }
+            else
+            {
+                TriangulateEdgeFan(center, e, cell.Color);
+            }
 
             // Add a connection to neighboring hex cell if it is NE, E, and SE
             if (direction <= HexDirection.SE)
             {
                 TriangulateConnection(direction, cell, e);
             }
+        }
+
+        void TriangulateWithRiverBeginOrEnd(
+            HexDirection direction, HexCell cell, Vector3 center, EdgeVertices e)
+        {
+            EdgeVertices m = new EdgeVertices(
+                Vector3.Lerp(center, e.v1, 0.5f),
+                Vector3.Lerp(center, e.v5, 0.5f)
+            );
+
+            // Make sure that the channel does not become too shallow too fast
+            // so, the center point is not lowered
+            m.v3.y = e.v3.y;
+
+            TriangulateEdgeStrip(m, cell.Color, e, cell.Color);
+            TriangulateEdgeFan(center, m, cell.Color);
+        }
+
+        void TriangulateWithRiver(
+            HexDirection direction, HexCell cell, Vector3 center, EdgeVertices e)
+        {
+            // To create a channel straight across the cell part,
+            // we have to stretch the center into a line.
+            // This line needs to have the same width as the channel.
+
+            Vector3 centerL, centerR;
+
+            // If the river cuts straight across the hexagon
+            if (cell.HasRiverThroughEdge(direction.Opposite()))
+            {
+                centerL = center +
+                        HexMetrics.GetFirstSolidCorner(direction.Previous()) * 0.25f;
+                centerR = center +
+                        HexMetrics.GetSecondSolidCorner(direction.Next()) * 0.25f;
+            }
+            // If the river bends by one
+            else if (cell.HasRiverThroughEdge(direction.Next()))
+            {
+                centerL = center;
+                centerR = Vector3.Lerp(center, e.v5, 2f / 3f);
+            }
+            else if (cell.HasRiverThroughEdge(direction.Previous()))
+            {
+                centerL = Vector3.Lerp(center, e.v1, 2f / 3f);
+                centerR = center;
+            }
+            // If the river bends by two
+            else if (cell.HasRiverThroughEdge(direction.Next2()))
+            {
+                centerL = center;
+                centerR = center +
+                          (HexMetrics.GetSolidEdgeMiddle(direction.Next()) *
+                          (0.5f * HexMetrics.innerToOuter));
+            }
+            else
+            {
+                centerL = center +
+                          (HexMetrics.GetSolidEdgeMiddle(direction.Previous()) *
+                          (0.5f * HexMetrics.innerToOuter));
+                centerR = center;
+            }
+
+            center = Vector3.Lerp(centerL, centerR, 0.5f);
+
+            // Middle line
+            EdgeVertices m = new EdgeVertices(
+                Vector3.Lerp(centerL, e.v1, 0.5f),
+                Vector3.Lerp(centerR, e.v5, 0.5f),
+                1f / 6f);
+
+            // Lower Y to make river bottoms
+            m.v3.y = center.y = e.v3.y;
+
+            // Fill the space between the middle and edge lines
+            TriangulateEdgeStrip(m, cell.Color, e, cell.Color);
+
+            // Second section of the trapezoid (towards center of hexagon)
+            AddTriangle(centerL, m.v1, m.v2);
+            AddTriangleColor(cell.Color);
+            AddQuad(centerL, center, m.v2, m.v3);
+            AddQuadColor(cell.Color);
+            AddQuad(center, centerR, m.v3, m.v4);
+            AddQuadColor(cell.Color);
+            AddTriangle(centerR, m.v4, m.v5);
+            AddTriangleColor(cell.Color);
         }
 
         void TriangulateEdgeFan(Vector3 center, EdgeVertices edge, Color color)
@@ -484,6 +584,13 @@ namespace TheZooMustGrow
             colors.Add(c2);
         }
 
+        void AddQuadColor(Color color)
+        {
+            colors.Add(color);
+            colors.Add(color);
+            colors.Add(color);
+            colors.Add(color);
+        }
 
         private Vector3 Perturb(Vector3 position)
         {
