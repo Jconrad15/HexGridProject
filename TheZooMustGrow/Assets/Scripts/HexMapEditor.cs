@@ -130,12 +130,25 @@ namespace TheZooMustGrow
                 {
                     cell.RemoveRiver();
                 }
-                else if (isDrag && riverMode == OptionalToggle.Yes)
+                if (roadMode == OptionalToggle.No)
+                {
+                    cell.RemoveRoads();
+                }
+
+                // Check for drags
+                if (isDrag)
                 {
                     HexCell otherCell = cell.GetNeighbor(dragDirection.Opposite());
                     if (otherCell)
                     {
-                        otherCell.SetOutgoingRiver(dragDirection);
+                        if (riverMode == OptionalToggle.Yes)
+                        {
+                            otherCell.SetOutgoingRiver(dragDirection);
+                        }
+                        if (roadMode == OptionalToggle.Yes)
+                        {
+                            otherCell.AddRoad(dragDirection);
+                        }
                     }
                 }
             }
