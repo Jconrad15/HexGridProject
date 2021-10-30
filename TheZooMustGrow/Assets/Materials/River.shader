@@ -1,4 +1,4 @@
-Shader "Custom/Rver"
+Shader "Custom/River"
 {
     Properties
     {

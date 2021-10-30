@@ -9,7 +9,9 @@ namespace TheZooMustGrow
 
         public HexMesh terrain;
         public HexMesh rivers;
-		Canvas gridCanvas;
+        public HexMesh roads;
+
+        Canvas gridCanvas;
 
 		void Awake()
 		{
@@ -50,6 +52,7 @@ namespace TheZooMustGrow
         {
             terrain.Clear();
             rivers.Clear();
+            roads.Clear();
 
             for (int i = 0; i < cells.Length; i++)
             {
@@ -58,6 +61,7 @@ namespace TheZooMustGrow
 
             terrain.Apply();
             rivers.Apply();
+            roads.Apply();
         }
 
         void Triangulate(HexCell cell)
