@@ -12,7 +12,7 @@ namespace TheZooMustGrow
             Ignore, Yes, No
         }
 
-        OptionalToggle riverMode;
+        OptionalToggle riverMode, roadMode;
 
         public Color[] colors;
         public HexGrid hexGrid;
@@ -168,6 +168,11 @@ namespace TheZooMustGrow
         public void SetRiverMode(int mode)
         {
             riverMode = (OptionalToggle)mode;
+        }
+
+        public void SetRoadMode(int mode)
+        {
+            roadMode = (OptionalToggle)mode;
         }
 
         public void ShowUI(bool visible)
