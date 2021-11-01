@@ -14,6 +14,8 @@ namespace TheZooMustGrow
         public HexMesh waterShore;
         public HexMesh estuaries;
 
+        public HexFeatureManager features;
+
         Canvas gridCanvas;
 
 		void Awake()
@@ -59,6 +61,7 @@ namespace TheZooMustGrow
             water.Clear();
             waterShore.Clear();
             estuaries.Clear();
+            features.Clear();
 
             for (int i = 0; i < cells.Length; i++)
             {
@@ -71,6 +74,7 @@ namespace TheZooMustGrow
             water.Apply();
             waterShore.Apply();
             estuaries.Apply();
+            features.Apply();
         }
 
         /// <summary>
@@ -82,6 +86,12 @@ namespace TheZooMustGrow
             for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
             {
                 Triangulate(d, cell);
+            }
+
+            // Add features to each cell
+            if (!cell.IsUnderwater && !cell.HasRiver && !cell.HasRoads)
+            {
+                features.AddFeature(cell.Position);
             }
         }
 
@@ -124,6 +134,12 @@ namespace TheZooMustGrow
             else
             {
                 TriangulateWithoutRiver(direction, cell, center, e);
+
+                // Add features
+                if (!cell.IsUnderwater && !cell.HasRoadThroughEdge(direction))
+                {
+                    features.AddFeature((center + e.v1 + e.v5) * (1f / 3f));
+                }
             }
 
             // terrain.Add a connection to neighboring hex cell if it is NE, E, and SE
@@ -384,6 +400,11 @@ namespace TheZooMustGrow
             TriangulateEdgeStrip(m, cell.Color, e, cell.Color);
             TriangulateEdgeFan(center, m, cell.Color);
 
+            // Add features
+            if (!cell.IsUnderwater && !cell.HasRoadThroughEdge(direction))
+            {
+                features.AddFeature((center + e.v1 + e.v5) * (1f / 3f));
+            }
         }
 
         void TriangulateWithRiverBeginOrEnd(
