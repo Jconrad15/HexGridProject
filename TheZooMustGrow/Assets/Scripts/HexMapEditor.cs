@@ -19,9 +19,11 @@ namespace TheZooMustGrow
 
         private Color activeColor;
         private int activeElevation;
+        private int activeWaterLevel;
 
         bool applyColor;
         bool applyElevation = true;
+        bool applyWaterLevel = true;
 
         int brushSize;
 
@@ -126,6 +128,11 @@ namespace TheZooMustGrow
                     cell.Elevation = activeElevation;
                 }
 
+                if (applyWaterLevel)
+                {
+                    cell.WaterLevel = activeWaterLevel;
+                }
+
                 if (riverMode == OptionalToggle.No)
                 {
                     cell.RemoveRiver();
@@ -191,6 +198,16 @@ namespace TheZooMustGrow
         public void ShowUI(bool visible)
         {
             hexGrid.ShowUI(visible);
+        }
+
+        public void SetApplyWaterLevel(bool toggle)
+        {
+            applyWaterLevel = toggle;
+        }
+
+        public void SetWaterLevel(float level)
+        {
+            activeWaterLevel = (int)level;
         }
     }
 }

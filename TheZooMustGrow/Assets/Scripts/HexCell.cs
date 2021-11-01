@@ -64,8 +64,16 @@ namespace TheZooMustGrow
             get
             {
                 return
-                    (elevation + HexMetrics.riverSurfaceElevationOffset) *
+                    (elevation + HexMetrics.waterElevationOffset) *
                     HexMetrics.elevationStep;
+            }
+        }
+
+        public HexDirection RiverBeginOrEndDirection
+        {
+            get
+            {
+                return hasIncomingRiver ? incomingRiver : outgoingRiver;
             }
         }
         #endregion
@@ -88,11 +96,35 @@ namespace TheZooMustGrow
             }
         }
 
-        public HexDirection RiverBeginOrEndDirection
+        private int waterLevel;
+        public int WaterLevel
         {
             get
             {
-                return hasIncomingRiver ? incomingRiver : outgoingRiver;
+                return waterLevel;
+            }
+            set
+            {
+                if (waterLevel == value) { return; }
+                waterLevel = value;
+                Refresh();
+            }
+        }
+
+        public bool IsUnderwater
+        {
+            get
+            {
+                return waterLevel > elevation;
+            }
+        }
+
+        public float WaterSurfaceY
+        {
+            get
+            {
+                return (waterLevel + HexMetrics.waterElevationOffset) *
+                    HexMetrics.elevationStep;
             }
         }
 

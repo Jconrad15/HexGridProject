@@ -31,7 +31,7 @@ namespace TheZooMustGrow
         public const int chunkSizeX = 5, chunkSizeZ = 5;
 
         public const float streamBedElevationOffset = -1.75f;
-        public const float riverSurfaceElevationOffset = -0.5f;
+        public const float waterElevationOffset = -0.5f;
 
         // Hex corners on the XZ plane
         private static Vector3[] corners = {
