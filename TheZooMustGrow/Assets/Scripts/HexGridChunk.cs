@@ -625,7 +625,9 @@ namespace TheZooMustGrow
             );
 
             // Check for river through connection
-            if (cell.HasRiverThroughEdge(direction))
+            bool hasRiver = cell.HasRiverThroughEdge(direction);
+            bool hasRoad = cell.HasRoadThroughEdge(direction);
+            if (hasRiver)
             {
                 e2.v3.y = neighbor.StreamBedY;
                 // Check if the river will be in an under water cell
@@ -663,16 +665,15 @@ namespace TheZooMustGrow
             // Check edge type
             if (cell.GetEdgeType(direction) == HexEdgeType.Slope)
             {
-                TriangulateEdgeTerraces(e1, cell, e2, neighbor, cell.HasRoadThroughEdge(direction));
+                TriangulateEdgeTerraces(e1, cell, e2, neighbor, hasRoad);
             }
             else
             {
-                TriangulateEdgeStrip(e1, cell.Color, e2, neighbor.Color,
-                    cell.HasRoadThroughEdge(direction));
+                TriangulateEdgeStrip(e1, cell.Color, e2, neighbor.Color, hasRoad);
             }
 
             // Add feature walls as needed
-            features.AddWall(e1, cell, e2, neighbor);
+            features.AddWall(e1, cell, e2, neighbor, hasRiver, hasRoad);
 
             // terrain.Add triangular holes/corners for all NE and E neighbors
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
