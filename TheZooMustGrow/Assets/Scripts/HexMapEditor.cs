@@ -12,7 +12,7 @@ namespace TheZooMustGrow
             Ignore, Yes, No
         }
 
-        OptionalToggle riverMode, roadMode;
+        OptionalToggle riverMode, roadMode, walledMode;
 
         public Color[] colors;
         public HexGrid hexGrid;
@@ -166,6 +166,11 @@ namespace TheZooMustGrow
                     cell.RemoveRoads();
                 }
 
+                if (walledMode != OptionalToggle.Ignore)
+                {
+                    cell.Walled = walledMode == OptionalToggle.Yes;
+                }
+
                 // Check for drags
                 if (isDrag)
                 {
@@ -264,5 +269,9 @@ namespace TheZooMustGrow
             activePlantLevel = (int)level;
         }
 
+        public void SetWalledMode(int mode)
+        {
+            walledMode = (OptionalToggle)mode;
+        }
     }
 }
