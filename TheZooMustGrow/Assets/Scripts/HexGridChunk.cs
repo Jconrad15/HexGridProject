@@ -138,6 +138,13 @@ namespace TheZooMustGrow
         void TriangulateAdjacentToRiver(
             HexDirection direction, HexCell cell, Vector3 center, EdgeVertices e)
         {
+            // Check for road
+            if (cell.HasRoads)
+            {
+                TriangulateRoadAdjacentToRiver(direction, cell, center, e);
+            }
+
+
             // Need to determine both what kind or river we have, and its relative orientation.
             if (cell.HasRiverThroughEdge(direction.Next()))
             {
@@ -710,6 +717,131 @@ namespace TheZooMustGrow
             roads.AddTriangleUV(
                 new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f)
             );
+        }
+
+        void TriangulateRoadAdjacentToRiver(
+            HexDirection direction, HexCell cell, Vector3 center, EdgeVertices e)
+        {
+            bool hasRoadThroughEdge = cell.HasRoadThroughEdge(direction);
+            bool previousHasRiver = cell.HasRiverThroughEdge(direction.Previous());
+            bool nextHasRiver = cell.HasRiverThroughEdge(direction.Next());
+
+            Vector2 interpolators = GetRoadInterpolators(direction, cell);
+            Vector3 roadCenter = center;
+
+            // If the cell includes a beginning or end of a river
+            if (cell.HasRiverBeginOrEnd)
+            {
+                // Push the river center away from the Hex center
+                roadCenter += HexMetrics.GetSolidEdgeMiddle(
+                    cell.RiverBeginOrEndDirection.Opposite()
+                ) * (1f / 3f);
+            }
+            // If the cell includes a straight river
+            else if (cell.IncomingRiver == cell.OutgoingRiver.Opposite())
+            {
+                Vector3 corner;
+                if (previousHasRiver)
+                {
+                    // If there is no road through the edge or the next edge
+                    // break out of method before tiangulating road on the 
+                    // other side of the river
+                    if (!hasRoadThroughEdge &&
+                        !cell.HasRoadThroughEdge(direction.Next()))
+                    {
+                        return;
+                    }
+                    corner = HexMetrics.GetSecondSolidCorner(direction);
+                }
+                else
+                {
+                    // If there is no road through the edge or the next edge
+                    // break out of method before tiangulating road on the 
+                    // other side of the river
+                    if (!hasRoadThroughEdge &&
+                        !cell.HasRoadThroughEdge(direction.Previous()))
+                    {
+                        return;
+                    }
+                    corner = HexMetrics.GetFirstSolidCorner(direction);
+                }
+
+                // To shift the road so it ends up adjacent to the river,
+                // we have to move the road center half of the way towards
+                // that corner. Then, we have to also move the cell center
+                // a quarter of the way in that direction.
+                roadCenter += corner * 0.5f;
+                center += corner * 0.25f;
+            }
+            // If the cell includes a zigzagging river in the previous direction
+            else if (cell.IncomingRiver == cell.OutgoingRiver.Previous())
+            {
+                // Move the road center by using one of the corners of the incoming
+                // river direction. Which corner it is depends on the flow direction.
+                // Push the road center away from that corner with a factor of 0.2.
+                roadCenter -= HexMetrics.GetFirstCorner(cell.IncomingRiver) * 0.2f;
+            }
+            // If the cell includes a zigzagging river in the next direction
+            else if (cell.IncomingRiver == cell.OutgoingRiver.Next())
+            {
+                roadCenter -= HexMetrics.GetFirstCorner(cell.IncomingRiver) * 0.2f;
+            }
+            // Inside of a curved river (next and previous)
+            else if (previousHasRiver && nextHasRiver)
+            {
+                // Prune Roads
+                if (!hasRoadThroughEdge) { return; }
+
+                // Pull the road center towards the current cell edge,
+                // shortening the road by a lot. A factor of 0.7 is fine.
+                // The cell center has to move as well, with a factor of 0.5.
+                Vector3 offset = HexMetrics.GetSolidEdgeMiddle(direction) *
+                                 HexMetrics.innerToOuter;
+                roadCenter += offset * 0.7f;
+                center += offset * 0.5f;
+            }
+            // Outside of a curved river
+            else
+            {
+                HexDirection middle;
+                if (previousHasRiver)
+                {
+                    middle = direction.Next();
+                }
+                else if (nextHasRiver)
+                {
+                    middle = direction.Previous();
+                }
+                else
+                {
+                    middle = direction;
+                }
+                // Prune roads
+                if (!cell.HasRoadThroughEdge(middle) &&
+                    !cell.HasRoadThroughEdge(middle.Previous()) &&
+                    !cell.HasRoadThroughEdge(middle.Next()))
+                {
+                    return;
+                }
+
+                roadCenter += HexMetrics.GetSolidEdgeMiddle(middle) * 0.25f;
+            }
+
+            Vector3 mL = Vector3.Lerp(roadCenter, e.v1, interpolators.x);
+            Vector3 mR = Vector3.Lerp(roadCenter, e.v5, interpolators.y);
+            TriangulateRoad(roadCenter, mL, mR, e, hasRoadThroughEdge);
+
+            // Close the gaps created by moving the center of the river away
+            // from the center of the Hex cell
+            if (previousHasRiver)
+            {
+                TriangulateRoadEdge(roadCenter, center, mL);
+            }
+            if (nextHasRiver)
+            {
+                TriangulateRoadEdge(roadCenter, mR, center);
+            }
+
         }
 
         /// <summary>
