@@ -7,6 +7,9 @@ namespace TheZooMustGrow
     public class HexFeatureManager : MonoBehaviour
     {
         public HexFeatureCollection[] urbanCollections;
+        public HexFeatureCollection[] farmCollections;
+        public HexFeatureCollection[] plantCollections;
+
         private Transform container;
 
         public void Clear()
@@ -29,9 +32,45 @@ namespace TheZooMustGrow
             HexHash hash = HexMetrics.SampleHashGrid(position);
 
             // Choose a prefab
-            Transform prefab = PickPrefab(cell.UrbanLevel, hash.a, hash.b);
-            // Return if none choosen
-            if (!prefab) { return; }
+            Transform prefab = PickPrefab(urbanCollections, cell.UrbanLevel, hash.a, hash.d);
+            Transform otherPrefab = PickPrefab(farmCollections, cell.FarmLevel, hash.b, hash.d);
+
+            // Determine which prefabcollection to use (e.g., plant vs farm vs urban)
+            float usedHash = hash.a;
+            if (prefab) 
+            {
+                // If the Prefab exists
+                if (otherPrefab && hash.b < hash.a)
+                {
+                    prefab = otherPrefab;
+                    usedHash = hash.b;
+                }
+            }
+            else if (otherPrefab)
+            {
+                // OtherPrefab choosen, prefab does not exist
+                prefab = otherPrefab;
+                usedHash = hash.b;
+            }
+            // Now also choose plant prefab
+            otherPrefab = PickPrefab(
+                plantCollections, cell.PlantLevel, hash.c, hash.d);
+            if (prefab)
+            {
+                if (otherPrefab && hash.c < usedHash)
+                {
+                    prefab = otherPrefab;
+                }
+            }
+            else if (otherPrefab)
+            {
+                prefab = otherPrefab;
+            }
+            else
+            {
+                // No prefabs choosen
+                return;
+            }
 
             Transform instance = Instantiate(prefab);
 
@@ -40,13 +79,14 @@ namespace TheZooMustGrow
 
             // Perturb the position so that it matches the hex perturbation
             instance.localPosition = HexMetrics.Perturb(position);
-            instance.localRotation = Quaternion.Euler(0f, 360f * hash.c, 0f);
+            instance.localRotation = Quaternion.Euler(0f, 360f * hash.e, 0f);
 
             // Add to container
             instance.SetParent(container, false);
         }
 
-        Transform PickPrefab(int level, float hash, float choice)
+        Transform PickPrefab(HexFeatureCollection[] collection,
+            int level, float hash, float choice)
         {
             if (level > 0)
             {
@@ -55,7 +95,7 @@ namespace TheZooMustGrow
                 {
                     if (hash < thresholds[i])
                     {
-                        return urbanCollections[i].Pick(choice);
+                        return collection[i].Pick(choice);
                     }
                 }
             }
