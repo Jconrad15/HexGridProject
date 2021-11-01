@@ -150,5 +150,34 @@ namespace TheZooMustGrow
             return (corners[(int)direction] + corners[(int)direction + 1]) *
                 waterBlendFactor;
         }
+
+        public const int hashGridSize = 256;
+        static HexHash[] hashGrid;
+        public const float hashGridScale = 0.25f;
+
+        public static void InitializeHashGrid(int seed)
+        {
+            hashGrid = new HexHash[hashGridSize * hashGridSize];
+
+            Random.State currentState = Random.state;
+            Random.InitState(seed);
+            for (int i = 0; i < hashGrid.Length; i++)
+            {
+                hashGrid[i] = HexHash.Create();
+            }
+
+            Random.state = currentState;
+        }
+
+        public static HexHash SampleHashGrid(Vector3 position)
+        {
+            int x = (int)position.x % hashGridSize;
+            if (x < 0) { x += hashGridSize; }
+
+            int z = (int)position.z % hashGridSize;
+            if (z < 0) { z += hashGridSize; }
+
+            return hashGrid[x + z * hashGridSize];
+        }
     }
 }

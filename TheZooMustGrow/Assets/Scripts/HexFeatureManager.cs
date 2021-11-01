@@ -26,6 +26,12 @@ namespace TheZooMustGrow
 
         public void AddFeature(Vector3 position)
         {
+            HexHash hash = HexMetrics.SampleHashGrid(position);
+
+            // Don't add features in some cases based on hash A coord
+            if (hash.a >= 0.5f) { return; }
+
+
             Transform instance = Instantiate(featurePrefab);
             
             // Increase Y coord by half the height of the cube so it sits on the surface
@@ -33,6 +39,7 @@ namespace TheZooMustGrow
 
             // Perturb the position so that it matches the hex perturbation
             instance.localPosition = HexMetrics.Perturb(position);
+            instance.localRotation = Quaternion.Euler(0f, 360f * hash.b, 0f);
 
             // Add to container
             instance.SetParent(container, false);

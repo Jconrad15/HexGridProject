@@ -2897,6 +2897,7 @@ MonoBehaviour:
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
   noiseSource: {fileID: 2800000, guid: 38701cdeb1fb9427cbb585f917aa59cb, type: 3}
   chunkPrefab: {fileID: 8068428891825588432, guid: feea3aafa7ba6304f920fe5cbe08eed5, type: 3}
+  seed: 1234
 --- !u!4 &585186750
 Transform:
   m_ObjectHideFlags: 0

@@ -22,10 +22,12 @@ namespace TheZooMustGrow
         public HexGridChunk chunkPrefab;
         HexGridChunk[] chunks;
 
+        public int seed;
 
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
+            HexMetrics.InitializeHashGrid(seed);
 
             cellCountX = chunkCountX * HexMetrics.chunkSizeX;
             cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
@@ -63,7 +65,11 @@ namespace TheZooMustGrow
 
         void OnEnable()
         {
-            HexMetrics.noiseSource = noiseSource;
+            if (!HexMetrics.noiseSource)
+            {
+                HexMetrics.noiseSource = noiseSource;
+                HexMetrics.InitializeHashGrid(seed);
+            }
         }
 
         private void CreateCell(int x, int z, int i)
