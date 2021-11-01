@@ -105,13 +105,33 @@ namespace TheZooMustGrow
             }
             else
             {
-                TriangulateEdgeFan(center, e, cell.Color);
+                TriangulateWithoutRiver(direction, cell, center, e);
             }
 
             // terrain.Add a connection to neighboring hex cell if it is NE, E, and SE
             if (direction <= HexDirection.SE)
             {
                 TriangulateConnection(direction, cell, e);
+            }
+        }
+
+        void TriangulateWithoutRiver(
+            HexDirection direction, HexCell cell, Vector3 center, EdgeVertices e)
+        {
+            TriangulateEdgeFan(center, e, cell.Color);
+
+            // Check if there is also a Road
+            if (cell.HasRoads)
+            {
+                // Determine which interpolator to user
+                Vector2 interpolators = GetRoadInterpolators(direction, cell);
+
+                TriangulateRoad(
+                    center,
+                    Vector3.Lerp(center, e.v1, interpolators.x),
+                    Vector3.Lerp(center, e.v5, interpolators.y),
+                    e, cell.HasRoadThroughEdge(direction)
+                );
             }
         }
 
@@ -319,7 +339,8 @@ namespace TheZooMustGrow
 
         void TriangulateEdgeStrip(
             EdgeVertices e1, Color c1,
-            EdgeVertices e2, Color c2)
+            EdgeVertices e2, Color c2,
+            bool hasRoad = false)
         {
             terrain.AddQuad(e1.v1, e1.v2, e2.v1, e2.v2);
             terrain.AddQuadColor(c1, c2);
@@ -329,6 +350,11 @@ namespace TheZooMustGrow
             terrain.AddQuadColor(c1, c2);
             terrain.AddQuad(e1.v4, e1.v5, e2.v4, e2.v5);
             terrain.AddQuadColor(c1, c2);
+
+            if (hasRoad)
+            {
+                TriangulateRoadSegment(e1.v2, e1.v3, e1.v4, e2.v2, e2.v3, e2.v4);
+            }
         }
 
         /// <summary>
@@ -366,11 +392,12 @@ namespace TheZooMustGrow
             // Check edge type
             if (cell.GetEdgeType(direction) == HexEdgeType.Slope)
             {
-                TriangulateEdgeTerraces(e1, cell, e2, neighbor);
+                TriangulateEdgeTerraces(e1, cell, e2, neighbor, cell.HasRoadThroughEdge(direction));
             }
             else
             {
-                TriangulateEdgeStrip(e1, cell.Color, e2, neighbor.Color);
+                TriangulateEdgeStrip(e1, cell.Color, e2, neighbor.Color,
+                    cell.HasRoadThroughEdge(direction));
             }
 
             // terrain.Add triangular holes/corners for all NE and E neighbors
@@ -610,13 +637,14 @@ namespace TheZooMustGrow
 
         void TriangulateEdgeTerraces(
             EdgeVertices begin, HexCell beginCell,
-            EdgeVertices end, HexCell endCell)
+            EdgeVertices end, HexCell endCell,
+            bool hasRoad)
         {
             EdgeVertices e2 = EdgeVertices.TerraceLerp(begin, end, 1);
             Color c2 = HexMetrics.TerraceLerp(beginCell.Color, endCell.Color, 1);
 
             // First slope
-            TriangulateEdgeStrip(begin, beginCell.Color, e2, c2);
+            TriangulateEdgeStrip(begin, beginCell.Color, e2, c2, hasRoad);
 
             for (int i = 2; i < HexMetrics.terraceSteps; i++)
             {
@@ -629,12 +657,89 @@ namespace TheZooMustGrow
                 c2 = HexMetrics.TerraceLerp(beginCell.Color, endCell.Color, i);
 
                 // terrain.Add the quad
-                TriangulateEdgeStrip(e1, c1, e2, c2);
+                TriangulateEdgeStrip(e1, c1, e2, c2, hasRoad);
             }
 
             // Last slope
-            TriangulateEdgeStrip(e2, c2, end, endCell.Color);
+            TriangulateEdgeStrip(e2, c2, end, endCell.Color, hasRoad);
         }
 
+        void TriangulateRoadSegment(
+            Vector3 v1, Vector3 v2, Vector3 v3,
+            Vector3 v4, Vector3 v5, Vector3 v6)
+        {
+            roads.AddQuad(v1, v2, v4, v5);
+            roads.AddQuad(v2, v3, v5, v6);
+
+            // Set UV -- V=0 and U=1 in the middle
+            roads.AddQuadUV(0f, 1f, 0f, 0f);
+            roads.AddQuadUV(1f, 0f, 0f, 0f);
+        }
+
+        void TriangulateRoad(
+            Vector3 center, Vector3 mL, Vector3 mR,
+            EdgeVertices e, bool hasRoadThroughCellEdge)
+        {
+            // Check if the road goes through the cell edge
+            if (hasRoadThroughCellEdge)
+            {
+                // Create the road such that it goes from center to edge
+                Vector3 mC = Vector3.Lerp(mL, mR, 0.5f);
+                TriangulateRoadSegment(mL, mC, mR, e.v2, e.v3, e.v4);
+
+                // Add two triangles pointing to the center
+                roads.AddTriangle(center, mL, mC);
+                roads.AddTriangle(center, mC, mR);
+
+                // Add UVs
+                roads.AddTriangleUV(
+                    new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(1f, 0f));
+                roads.AddTriangleUV(
+                    new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f));
+            }
+            else
+            {
+                // Create the road such that it fills a center triangle in this direction
+                TriangulateRoadEdge(center, mL, mR);
+            }
+        }
+
+        void TriangulateRoadEdge(Vector3 center, Vector3 mL, Vector3 mR)
+        {
+            roads.AddTriangle(center, mL, mR);
+            roads.AddTriangleUV(
+                new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f)
+            );
+        }
+
+        /// <summary>
+        /// Determine which interpolator to use for a Road.  
+        /// Can help with center bulges.
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="cell"></param>
+        /// <returns></returns>
+        Vector2 GetRoadInterpolators(HexDirection direction, HexCell cell)
+        {
+            // X component is the interpolator for the left point,
+            // Y component is the interpolator for the right point.
+            Vector2 interpolators;
+
+            // If the road is in this direction
+            if (cell.HasRoadThroughEdge(direction))
+            {
+                // Place interpolator points halfway
+                interpolators.x = interpolators.y = 0.5f;
+            }
+            else
+            {
+                interpolators.x =
+                    cell.HasRoadThroughEdge(direction.Previous()) ? 0.5f : 0.25f;
+                interpolators.y =
+                    cell.HasRoadThroughEdge(direction.Next()) ? 0.5f : 0.25f;
+            }
+
+            return interpolators;
+        }
     }
 }
