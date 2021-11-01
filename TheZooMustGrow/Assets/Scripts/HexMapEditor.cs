@@ -20,10 +20,12 @@ namespace TheZooMustGrow
         private Color activeColor;
         private int activeElevation;
         private int activeWaterLevel;
+        private int activeUrbanLevel;
 
         bool applyColor;
         bool applyElevation = true;
         bool applyWaterLevel = true;
+        bool applyUrbanLevel;
 
         int brushSize;
 
@@ -132,11 +134,17 @@ namespace TheZooMustGrow
                 {
                     cell.WaterLevel = activeWaterLevel;
                 }
+                
+                if (applyUrbanLevel)
+                {
+                    cell.UrbanLevel = activeUrbanLevel;
+                }
 
                 if (riverMode == OptionalToggle.No)
                 {
                     cell.RemoveRiver();
                 }
+
                 if (roadMode == OptionalToggle.No)
                 {
                     cell.RemoveRoads();
@@ -209,5 +217,16 @@ namespace TheZooMustGrow
         {
             activeWaterLevel = (int)level;
         }
+
+        public void SetApplyUrbanLevel(bool toggle)
+        {
+            applyUrbanLevel = toggle;
+        }
+
+        public void SetUrbanLevel(float level)
+        {
+            activeUrbanLevel = (int)level;
+        }
+
     }
 }

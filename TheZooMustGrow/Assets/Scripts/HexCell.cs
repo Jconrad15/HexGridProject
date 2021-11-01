@@ -197,6 +197,25 @@ namespace TheZooMustGrow
         }
         private Color color;
 
+        // Features
+        private int urbanLevel;
+        public int UrbanLevel
+        {
+            get
+            {
+                return urbanLevel;
+            }
+            set
+            {
+                if (urbanLevel != value)
+                {
+                    urbanLevel = value;
+                    RefreshSelfOnly();
+                }
+            }
+        }
+
+
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
         /// </summary>

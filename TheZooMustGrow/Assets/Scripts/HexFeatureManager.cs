@@ -24,13 +24,12 @@ namespace TheZooMustGrow
 
         }
 
-        public void AddFeature(Vector3 position)
+        public void AddFeature(HexCell cell, Vector3 position)
         {
             HexHash hash = HexMetrics.SampleHashGrid(position);
 
-            // Don't add features in some cases based on hash A coord
-            if (hash.a >= 0.5f) { return; }
-
+            // Don't add features in some cases based on hash A coord and urbanLevel
+            if (hash.a >= cell.UrbanLevel * 0.25f) { return; }
 
             Transform instance = Instantiate(featurePrefab);
             
