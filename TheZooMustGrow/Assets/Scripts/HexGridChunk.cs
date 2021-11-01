@@ -10,6 +10,7 @@ namespace TheZooMustGrow
         public HexMesh terrain;
         public HexMesh rivers;
         public HexMesh roads;
+        public HexMesh water;
 
         Canvas gridCanvas;
 
@@ -53,6 +54,7 @@ namespace TheZooMustGrow
             terrain.Clear();
             rivers.Clear();
             roads.Clear();
+            water.Clear();
 
             for (int i = 0; i < cells.Length; i++)
             {
@@ -62,8 +64,13 @@ namespace TheZooMustGrow
             terrain.Apply();
             rivers.Apply();
             roads.Apply();
+            water.Apply();
         }
 
+        /// <summary>
+        /// Triangulate the whole hexagon slice by slice.
+        /// </summary>
+        /// <param name="cell"></param>
         void Triangulate(HexCell cell)
         {
             for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
@@ -72,6 +79,11 @@ namespace TheZooMustGrow
             }
         }
 
+        /// <summary>
+        /// Triangulate a triangle slice of the hexagon.
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="cell"></param>
         void Triangulate(HexDirection direction, HexCell cell)
         {
             Vector3 center = cell.Position;
@@ -112,6 +124,50 @@ namespace TheZooMustGrow
             if (direction <= HexDirection.SE)
             {
                 TriangulateConnection(direction, cell, e);
+            }
+
+            // Check if the cell is submerged
+            if (cell.IsUnderwater)
+            {
+                TriangulateWater(direction, cell, center);
+            }
+        }
+
+        void TriangulateWater(HexDirection direction, HexCell cell, Vector3 center)
+        {
+            center.y = cell.WaterSurfaceY;
+            Vector3 c1 = center + HexMetrics.GetFirstSolidCorner(direction);
+            Vector3 c2 = center + HexMetrics.GetSecondSolidCorner(direction);
+
+            water.AddTriangle(center, c1, c2);
+
+            // Connect adjacent water cells
+            if (direction <= HexDirection.SE)
+            {
+                HexCell neighbor = cell.GetNeighbor(direction);
+                if (neighbor == null || !neighbor.IsUnderwater)
+                {
+                    return;
+                }
+
+                Vector3 bridge = HexMetrics.GetBridge(direction);
+                Vector3 e1 = c1 + bridge;
+                Vector3 e2 = c2 + bridge;
+
+                water.AddQuad(c1, c2, e1, e2);
+
+                // Add a triangle to fill gaps between 3 hexagons
+                if (direction <= HexDirection.E)
+                {
+                    HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
+                    if (nextNeighbor == null || !nextNeighbor.IsUnderwater)
+                    {
+                        return;
+                    }
+                    water.AddTriangle(
+                        c2, e2, c2 + HexMetrics.GetBridge(direction.Next())
+                    );
+                }
             }
         }
 
