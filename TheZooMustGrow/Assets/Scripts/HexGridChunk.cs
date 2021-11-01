@@ -671,6 +671,9 @@ namespace TheZooMustGrow
                     cell.HasRoadThroughEdge(direction));
             }
 
+            // Add feature walls as needed
+            features.AddWall(e1, cell, e2, neighbor);
+
             // terrain.Add triangular holes/corners for all NE and E neighbors
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
             if (direction <= HexDirection.E && nextNeighbor != null)
@@ -768,6 +771,9 @@ namespace TheZooMustGrow
                 terrain.AddTriangle(bottom, left, right);
                 terrain.AddTriangleColor(bottomCell.Color, leftCell.Color, rightCell.Color);
             }
+
+            // Add wall feature to the corner triangle
+            features.AddWall(bottom, bottomCell, left, leftCell, right, rightCell);
         }
 
         private void TriangulateCornerTerraces(

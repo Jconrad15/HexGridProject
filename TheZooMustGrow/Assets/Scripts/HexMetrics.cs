@@ -191,5 +191,18 @@ namespace TheZooMustGrow
             return featureThresholds[level];
         }
 
+
+        public const float wallHeight = 3f;
+        public const float wallThickness = 0.75f;
+
+        public static Vector3 WallThicknessOffset(Vector3 near, Vector3 far)
+        {
+            Vector3 offset;
+            offset.x = far.x - near.x;
+            offset.y = 0f;
+            offset.z = far.z - near.z;
+
+            return offset.normalized * (wallThickness * 0.5f);
+        }
     }
 }
