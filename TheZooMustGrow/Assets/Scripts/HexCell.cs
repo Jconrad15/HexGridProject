@@ -76,6 +76,13 @@ namespace TheZooMustGrow
                 return hasIncomingRiver ? incomingRiver : outgoingRiver;
             }
         }
+
+        bool IsValidRiverDestination(HexCell neighbor)
+        {
+            return neighbor && (
+                elevation >= neighbor.elevation || waterLevel == neighbor.elevation
+            );
+        }
         #endregion
 
         [SerializeField]
@@ -107,6 +114,7 @@ namespace TheZooMustGrow
             {
                 if (waterLevel == value) { return; }
                 waterLevel = value;
+                ValidateRivers();
                 Refresh();
             }
         }
@@ -161,17 +169,7 @@ namespace TheZooMustGrow
                 uiRect.localPosition = uiPosition;
 
                 // Remove rivers if they change to flowing uphill due to elevation change
-                if (hasOutgoingRiver &&
-                    elevation < GetNeighbor(outgoingRiver).elevation)
-                {
-                    RemoveOutgoingRiver();
-                }
-
-                if (hasIncomingRiver &&
-                    elevation > GetNeighbor(incomingRiver).elevation)
-                {
-                    RemoveIncomingRiver();
-                }
+                ValidateRivers();
 
                 // Remove Roads if they become too steep
                 for (int i = 0; i < roads.Length; i++)
@@ -308,8 +306,10 @@ namespace TheZooMustGrow
             HexCell neighbor = GetNeighbor(direction);
             // Abort if there is no neighbor
             // Abort if the neighbor is uphill
-            if (!neighbor || elevation < neighbor.elevation)
-            { return; }
+            if (!IsValidRiverDestination(neighbor))
+            {
+                return;
+            }
 
             // Clear any previous outgoing river
             RemoveOutgoingRiver();
@@ -330,6 +330,20 @@ namespace TheZooMustGrow
 
             // Remove the roads if a river is created
             SetRoad((int)direction, false);
+        }
+
+        void ValidateRivers()
+        {
+            if ( hasOutgoingRiver &&
+                !IsValidRiverDestination(GetNeighbor(outgoingRiver)))
+            {
+                RemoveOutgoingRiver();
+            }
+            if (hasIncomingRiver &&
+                !GetNeighbor(incomingRiver).IsValidRiverDestination(this))
+            {
+                RemoveIncomingRiver();
+            }
         }
 
         public bool HasRoadThroughEdge(HexDirection direction)
