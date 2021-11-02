@@ -15,8 +15,6 @@ namespace TheZooMustGrow
 
         HexCell[] cells;
 
-        public Color defaultColor = Color.white;
-
         public Texture2D noiseSource;
 
         public HexGridChunk chunkPrefab;
@@ -24,10 +22,13 @@ namespace TheZooMustGrow
 
         public int seed;
 
+        public Color[] colors;
+
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
+            HexMetrics.colors = colors;
 
             cellCountX = chunkCountX * HexMetrics.chunkSizeX;
             cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
@@ -69,6 +70,7 @@ namespace TheZooMustGrow
             {
                 HexMetrics.noiseSource = noiseSource;
                 HexMetrics.InitializeHashGrid(seed);
+                HexMetrics.colors = colors;
             }
         }
 
@@ -83,7 +85,6 @@ namespace TheZooMustGrow
             HexCell cell = cells[i] = Instantiate(cellPrefab);
             cell.transform.localPosition = position;
             cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
-            cell.Color = defaultColor;
 
             // Set neighboring HexCells
             // East/west neighbors

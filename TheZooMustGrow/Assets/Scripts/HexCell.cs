@@ -185,17 +185,28 @@ namespace TheZooMustGrow
         }
         private int elevation = int.MinValue;
 
-        public Color Color
+        private int terrainTypeIndex;
+        public int TerrainTypeIndex
         {
-            get { return color; }
+            get
+            {
+                return terrainTypeIndex;
+            }
             set
             {
-                if (color == value) { return; }
-                color = value;
-                Refresh();
+                if (terrainTypeIndex != value)
+                {
+                    terrainTypeIndex = value;
+                    Refresh();
+                }
             }
         }
+
         private Color color;
+        public Color Color
+        {
+            get { return HexMetrics.colors[terrainTypeIndex]; }
+        }
 
         // Features
         private int urbanLevel;

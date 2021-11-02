@@ -3880,7 +3880,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
-        m_MethodName: SelectColor
+        m_MethodName: SetTerrainTypeIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4383,10 +4383,15 @@ MonoBehaviour:
   chunkCountZ: 3
   cellPrefab: {fileID: 5269777891100023710, guid: c978ce0cfb909784fbb04735f565cca1, type: 3}
   cellLabelPrefab: {fileID: 6159825169382495090, guid: 42ad7fc2001434d46b87d8ddb39f0c73, type: 3}
-  defaultColor: {r: 1, g: 1, b: 1, a: 1}
   noiseSource: {fileID: 2800000, guid: 38701cdeb1fb9427cbb585f917aa59cb, type: 3}
   chunkPrefab: {fileID: 8068428891825588432, guid: feea3aafa7ba6304f920fe5cbe08eed5, type: 3}
   seed: 1234
+  colors:
+  - {r: 0.8584906, g: 0.7618635, b: 0.10933607, a: 1}
+  - {r: 0.1254562, g: 0.6132076, b: 0.06652725, a: 1}
+  - {r: 0.09732112, g: 0.12559797, b: 0.764151, a: 1}
+  - {r: 0.8490566, g: 0.31740114, b: 0.10012458, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &585186750
 Transform:
   m_ObjectHideFlags: 0
@@ -5193,7 +5198,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
-        m_MethodName: SelectColor
+        m_MethodName: SetTerrainTypeIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9510,7 +9515,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
-        m_MethodName: SelectColor
+        m_MethodName: SetTerrainTypeIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10686,7 +10691,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
-        m_MethodName: SelectColor
+        m_MethodName: SetTerrainTypeIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10824,12 +10829,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93b9fd542ec533040b330fc9025ea5ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  colors:
-  - {r: 0.97900003, g: 0.83724433, b: 0.15061538, a: 1}
-  - {r: 0.20061205, g: 0.53900003, b: 0.09915568, a: 1}
-  - {r: 0.11120528, g: 0.103825495, b: 0.759, a: 1}
-  - {r: 0.8867924, g: 0.39816427, b: 0.17986828, a: 1}
-  - {r: 1, g: 1, b: 1, a: 1}
   hexGrid: {fileID: 585186749}
 --- !u!114 &1740426416
 MonoBehaviour:
@@ -11435,7 +11434,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
-        m_MethodName: SelectColor
+        m_MethodName: SetTerrainTypeIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -11533,7 +11532,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
-        m_MethodName: SelectColor
+        m_MethodName: SetTerrainTypeIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

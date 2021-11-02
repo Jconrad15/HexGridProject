@@ -20,6 +20,8 @@ namespace TheZooMustGrow
         public const float horizontalTerraceStepSize = 1f / terraceSteps;
         public const float verticalTerraceStepSize = 1f / (terracesPerSlope + 1);
 
+        public static Color[] colors;
+
         public static Texture2D noiseSource;
         public const float cellPerturbStrength = 4f;
         // Scale the noise sampling so the texture covers a much larger area in worldspace

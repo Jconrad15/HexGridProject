@@ -14,10 +14,8 @@ namespace TheZooMustGrow
 
         OptionalToggle riverMode, roadMode, walledMode;
 
-        public Color[] colors;
         public HexGrid hexGrid;
 
-        private Color activeColor;
         private int activeElevation;
         private int activeWaterLevel;
 
@@ -25,8 +23,8 @@ namespace TheZooMustGrow
         private int activeFarmLevel;
         private int activePlantLevel;
         private int activeSpecialIndex;
+        private int activeTerrainTypeIndex;
 
-        bool applyColor;
         bool applyElevation = false;
         bool applyWaterLevel = false;
 
@@ -40,11 +38,6 @@ namespace TheZooMustGrow
         bool isDrag;
         HexDirection dragDirection;
         HexCell previousCell;
-
-        private void Awake()
-        {
-            SelectColor(0);
-        }
 
         private void Update()
         {
@@ -128,9 +121,9 @@ namespace TheZooMustGrow
         {
             if (cell)
             {
-                if (applyColor)
+                if (activeTerrainTypeIndex >= 0)
                 {
-                    cell.Color = activeColor;
+                    cell.TerrainTypeIndex = activeTerrainTypeIndex;
                 }
 
                 if (applyElevation)
@@ -207,15 +200,6 @@ namespace TheZooMustGrow
             applyElevation = toggle;
         }
 
-        public void SelectColor(int index)
-        {
-            applyColor = index >= 0;
-            if (applyColor)
-            {
-                activeColor = colors[index];
-            }
-        }
-
         public void SetBrushSize(float size)
         {
             brushSize = (int)size;
@@ -289,6 +273,11 @@ namespace TheZooMustGrow
         public void SetSpecialIndex(float index)
         {
             activeSpecialIndex = (int)index;
+        }
+
+        public void SetTerrainTypeIndex(int index)
+        {
+            activeTerrainTypeIndex = index;
         }
     }
 }
