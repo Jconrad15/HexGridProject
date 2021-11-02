@@ -14,6 +14,9 @@ namespace TheZooMustGrow
 
         public HexMesh walls;
         public Transform wallTower;
+        public Transform bridge;
+
+        public Transform[] special;
 
         public void Clear()
         {
@@ -34,6 +37,9 @@ namespace TheZooMustGrow
 
         public void AddFeature(HexCell cell, Vector3 position)
         {
+            // Don't add feature if special feature present
+            if (cell.IsSpecial) { return; }
+
             HexHash hash = HexMetrics.SampleHashGrid(position);
 
             // Choose a prefab
@@ -344,5 +350,36 @@ namespace TheZooMustGrow
             walls.AddQuadUnperturbed(point, v2, pointTop, v4);
             walls.AddTriangleUnperturbed(pointTop, v3, v4);
         }
+
+        public void AddBridge(Vector3 roadCenter1, Vector3 roadCenter2)
+        {
+            roadCenter1 = HexMetrics.Perturb(roadCenter1);
+            roadCenter2 = HexMetrics.Perturb(roadCenter2);
+
+            Transform instance = Instantiate(bridge);
+            instance.localPosition = (roadCenter1 + roadCenter2) * 0.5f;
+            instance.forward = roadCenter2 - roadCenter1;
+
+            // Scale the length of the bridge
+            float length = Vector3.Distance(roadCenter1, roadCenter2);
+            instance.localScale = new Vector3(
+                1f, 1f, length * (1f / HexMetrics.bridgeDesignLength));
+
+            instance.SetParent(container, false);
+        }
+
+        public void AddSpecialFeature(HexCell cell, Vector3 position)
+        {
+            Transform instance = Instantiate(special[cell.SpecialIndex - 1]);
+            instance.localPosition = HexMetrics.Perturb(position);
+
+            // Arbitrary orientation
+            HexHash hash = HexMetrics.SampleHashGrid(position);
+            instance.localRotation = Quaternion.Euler(0f, 360f * hash.e, 0f);
+            
+            instance.SetParent(container, false);
+        }
+
+
     }
 }

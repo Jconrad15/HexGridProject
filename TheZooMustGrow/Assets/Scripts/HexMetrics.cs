@@ -191,7 +191,7 @@ namespace TheZooMustGrow
             return featureThresholds[level];
         }
 
-
+        // Walls
         public const float wallHeight = 4f;
         public const float wallYOffset = -1f;
         public const float wallThickness = 0.75f;
@@ -217,6 +217,10 @@ namespace TheZooMustGrow
             near.y += (far.y - near.y) * v + wallYOffset;
             return near;
         }
+
+        // Bridges
+        public const float bridgeDesignLength = 7f;
+
 
     }
 }

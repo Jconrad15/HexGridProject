@@ -24,6 +24,7 @@ namespace TheZooMustGrow
         private int activeUrbanLevel;
         private int activeFarmLevel;
         private int activePlantLevel;
+        private int activeSpecialIndex;
 
         bool applyColor;
         bool applyElevation = false;
@@ -32,6 +33,7 @@ namespace TheZooMustGrow
         bool applyUrbanLevel;
         bool applyFarmLevel;
         bool applyPlantLevel;
+        bool applySpecialIndex;
 
         int brushSize;
 
@@ -140,7 +142,12 @@ namespace TheZooMustGrow
                 {
                     cell.WaterLevel = activeWaterLevel;
                 }
-                
+
+                if (applySpecialIndex)
+                {
+                    cell.SpecialIndex = activeSpecialIndex;
+                }
+
                 if (applyUrbanLevel)
                 {
                     cell.UrbanLevel = activeUrbanLevel;
@@ -272,6 +279,16 @@ namespace TheZooMustGrow
         public void SetWalledMode(int mode)
         {
             walledMode = (OptionalToggle)mode;
+        }
+
+        public void SetApplySpecialIndex(bool toggle)
+        {
+            applySpecialIndex = toggle;
+        }
+
+        public void SetSpecialIndex(float index)
+        {
+            activeSpecialIndex = (int)index;
         }
     }
 }

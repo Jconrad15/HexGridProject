@@ -266,6 +266,31 @@ namespace TheZooMustGrow
             }
         }
 
+        private int specialIndex;
+        public int SpecialIndex
+        {
+            get
+            {
+                return specialIndex;
+            }
+            set
+            {
+                if (specialIndex != value && !HasRiver)
+                {
+                    specialIndex = value;
+                    RemoveRoads();
+                    RefreshSelfOnly();
+                }
+            }
+        }
+
+        public bool IsSpecial
+        {
+            get
+            {
+                return specialIndex > 0;
+            }
+        }
 
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
@@ -392,11 +417,14 @@ namespace TheZooMustGrow
             // Set the outgoing river
             hasOutgoingRiver = true;
             outgoingRiver = direction;
+            // Remove special features
+            specialIndex = 0;
 
             // Set the incoming river of the next cell
             neighbor.RemoveIncomingRiver();
             neighbor.hasIncomingRiver = true;
             neighbor.incomingRiver = direction.Opposite();
+            neighbor.specialIndex = 0;
 
             // Remove the roads if a river is created
             SetRoad((int)direction, false);
@@ -425,6 +453,7 @@ namespace TheZooMustGrow
         {
             if (!roads[(int)direction] &&
                 !HasRiverThroughEdge(direction) &&
+                !IsSpecial && !GetNeighbor(direction).IsSpecial &&
                 GetElevationDifference(direction) <= 1)
             {
                 SetRoad((int)direction, true);

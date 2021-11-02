@@ -88,10 +88,20 @@ namespace TheZooMustGrow
                 Triangulate(d, cell);
             }
 
-            // Add features to each cell
-            if (!cell.IsUnderwater && !cell.HasRiver && !cell.HasRoads)
+            // Add features if not underwater
+            if (!cell.IsUnderwater)
             {
-                features.AddFeature(cell, cell.Position);
+                // Add features to the cell
+                if (!cell.HasRiver && !cell.HasRoads)
+                {
+                    features.AddFeature(cell, cell.Position);
+                }
+
+                // Add a special feature to the cell
+                if (cell.IsSpecial)
+                {
+                    features.AddSpecialFeature(cell, cell.Position);
+                }
             }
         }
 
@@ -1005,8 +1015,8 @@ namespace TheZooMustGrow
             {
                 // Push the river center away from the Hex center
                 roadCenter += HexMetrics.GetSolidEdgeMiddle(
-                    cell.RiverBeginOrEndDirection.Opposite()
-                ) * (1f / 3f);
+                              cell.RiverBeginOrEndDirection.Opposite()
+                              ) * (1f / 3f);
             }
             // If the cell includes a straight river
             else if (cell.IncomingRiver == cell.OutgoingRiver.Opposite())
@@ -1042,6 +1052,14 @@ namespace TheZooMustGrow
                 // that corner. Then, we have to also move the cell center
                 // a quarter of the way in that direction.
                 roadCenter += corner * 0.5f;
+
+                if (cell.IncomingRiver == direction.Next() && (
+                    cell.HasRoadThroughEdge(direction.Next2()) ||
+                    cell.HasRoadThroughEdge(direction.Opposite())))
+                {
+                    features.AddBridge(roadCenter, center - corner * 0.5f);
+                }
+
                 center += corner * 0.25f;
             }
             // If the cell includes a zigzagging river in the previous direction
@@ -1095,7 +1113,16 @@ namespace TheZooMustGrow
                     return;
                 }
 
-                roadCenter += HexMetrics.GetSolidEdgeMiddle(middle) * 0.25f;
+                Vector3 offset = HexMetrics.GetSolidEdgeMiddle(middle);
+                roadCenter += offset * 0.25f;
+
+                // Add a bridge
+                if (direction == middle &&
+                    cell.HasRoadThroughEdge(direction.Opposite()))
+                {
+                    features.AddBridge(roadCenter,
+                                       center - offset * (HexMetrics.innerToOuter * 0.7f));
+                }
             }
 
             Vector3 mL = Vector3.Lerp(roadCenter, e.v1, interpolators.x);
