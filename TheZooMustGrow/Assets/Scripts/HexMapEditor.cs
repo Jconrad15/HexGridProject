@@ -284,8 +284,8 @@ namespace TheZooMustGrow
             string path = Path.Combine(Application.persistentDataPath, "test.map");
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
             {
-                // First write a 0 to use as a header
-                int header = 0;
+                // Create a header to indicate a version
+                int header = 1;
                 writer.Write(header);
                 hexGrid.Save(writer);
             }
@@ -298,9 +298,10 @@ namespace TheZooMustGrow
             {
                 // Read in the header
                 int header = reader.ReadInt32();
-                if (header == 0)
+                if (header <= 1)
                 {
-                    hexGrid.Load(reader);
+                    hexGrid.Load(reader, header);
+                    HexMapCamera.ValidatePosition();
                 }
                 else
                 {

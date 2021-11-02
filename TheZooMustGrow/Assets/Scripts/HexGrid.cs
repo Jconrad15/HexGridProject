@@ -34,14 +34,14 @@ namespace TheZooMustGrow
             CreateMap(cellCountX, cellCountZ);
         }
 
-        public void CreateMap(int x, int z)
+        public bool CreateMap(int x, int z)
         {
             // Verify sizes
             if (x <= 0 || x % HexMetrics.chunkSizeX != 0 ||
                 z <= 0 || z % HexMetrics.chunkSizeZ != 0)
             {
                 Debug.LogError("Unsupported map size.");
-                return;
+                return false;
             }
 
             // Clear old data
@@ -61,6 +61,7 @@ namespace TheZooMustGrow
 
             CreateChunks();
             CreateCells();
+            return true;
         }
 
         private void CreateChunks()
@@ -200,14 +201,36 @@ namespace TheZooMustGrow
 
         public void Save(BinaryWriter writer)
         {
+            writer.Write(cellCountX);
+            writer.Write(cellCountZ);
+
             for (int i = 0; i < cells.Length; i++)
             {
                 cells[i].Save(writer);
             }
         }
 
-        public void Load(BinaryReader reader)
+        public void Load(BinaryReader reader, int header)
         {
+            
+            // Old default size
+            int x = 20, z = 15;
+            
+            if (header >= 1)
+            {
+                x = reader.ReadInt32();
+                z = reader.ReadInt32();
+            }
+
+            // If the cell size does not change,
+            // do not need to create a new map
+            if (x != cellCountX || z != cellCountZ)
+            {
+                // Abort if map creation failed
+                if (!CreateMap(x, z)) { return; }
+            }
+
+            // Load each cell's data
             for (int i = 0; i < cells.Length; i++)
             {
                 cells[i].Load(reader);
