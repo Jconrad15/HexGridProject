@@ -32,6 +32,8 @@ namespace TheZooMustGrow
         bool applyPlantLevel;
         bool applySpecialIndex;
 
+        bool editMode;
+
         int brushSize;
 
         bool isDrag;
@@ -76,7 +78,11 @@ namespace TheZooMustGrow
                     isDrag = false;
                 }
 
-                EditCells(currentCell);
+                if (editMode)
+                {
+                    EditCells(currentCell);
+                }
+
                 previousCell = currentCell;
             }
             else
@@ -221,11 +227,6 @@ namespace TheZooMustGrow
             roadMode = (OptionalToggle)mode;
         }
 
-        public void ShowUI(bool visible)
-        {
-            hexGrid.ShowUI(visible);
-        }
-
         public void SetApplyWaterLevel(bool toggle)
         {
             applyWaterLevel = toggle;
@@ -296,6 +297,12 @@ namespace TheZooMustGrow
             {
                 terrainMaterial.DisableKeyword("GRID_ON");
             }
+        }
+
+        public void SetEditMode(bool toggle)
+        {
+            editMode = toggle;
+            hexGrid.ShowUI(!toggle);
         }
     }
 }

@@ -146,9 +146,7 @@ namespace TheZooMustGrow
 
             // Create label
             TextMeshProUGUI label = Instantiate(cellLabelPrefab);
-            label.rectTransform.anchoredPosition =
-                new Vector2(position.x, position.z);
-            label.SetText(cell.coordinates.ToStringOnSeparateLines());
+            label.rectTransform.anchoredPosition = new Vector2(position.x, position.z);
 
             // Assign label rect to the HexCell
             cell.uiRect = label.rectTransform;

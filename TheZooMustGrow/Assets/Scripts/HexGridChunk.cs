@@ -27,7 +27,6 @@ namespace TheZooMustGrow
 			gridCanvas = GetComponentInChildren<Canvas>();
 
 			cells = new HexCell[HexMetrics.chunkSizeX * HexMetrics.chunkSizeZ];
-            ShowUI(false);
         }
 
 		public void AddCell (int index, HexCell cell)
