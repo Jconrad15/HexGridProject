@@ -350,6 +350,7 @@ MonoBehaviour:
   - prefabs:
     - {fileID: 5489384454609165399, guid: 9194d127fa2468c40ab946215f393b7c, type: 3}
     - {fileID: 5489384454609165399, guid: d2ed138bb4b2a3a46ad85a4b30eeef98, type: 3}
+  wallTower: {fileID: 1047999383442892491, guid: 2326fcd5d69db254bba4cd371d352057, type: 3}
   walls: {fileID: 4674998657818175506}
 --- !u!1 &5451625982730989715
 GameObject:

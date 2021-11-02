@@ -13,6 +13,7 @@ namespace TheZooMustGrow
         private Transform container;
 
         public HexMesh walls;
+        public Transform wallTower;
 
         public void Clear()
         {
@@ -177,8 +178,17 @@ namespace TheZooMustGrow
             }
         }
 
+        /// <summary>
+        /// Add a wall segment on the straights.
+        /// </summary>
+        /// <param name="nearLeft"></param>
+        /// <param name="farLeft"></param>
+        /// <param name="nearRight"></param>
+        /// <param name="farRight"></param>
+        /// <param name="addTower"></param>
         private void AddWallSegment(
-            Vector3 nearLeft, Vector3 farLeft, Vector3 nearRight, Vector3 farRight)
+            Vector3 nearLeft, Vector3 farLeft, Vector3 nearRight, Vector3 farRight,
+            bool addTower = false)
         {
             // Perturb the values first
             nearLeft = HexMetrics.Perturb(nearLeft);
@@ -218,8 +228,28 @@ namespace TheZooMustGrow
 
             // Create top quad
             walls.AddQuadUnperturbed(t1, t2, v3, v4);
+
+            // Add wall towers
+            if (addTower)
+            {
+                Transform towerInstance = Instantiate(wallTower);
+                towerInstance.transform.localPosition = (left + right) * 0.5f;
+                Vector3 rightDirection = right - left;
+                rightDirection.y = 0f;
+                towerInstance.transform.right = rightDirection;
+                towerInstance.SetParent(container, false);
+            }
         }
 
+        /// <summary>
+        /// Add a wall segment on the corners.
+        /// </summary>
+        /// <param name="pivot"></param>
+        /// <param name="pivotCell"></param>
+        /// <param name="left"></param>
+        /// <param name="leftCell"></param>
+        /// <param name="right"></param>
+        /// <param name="rightCell"></param>
         void AddWallSegment(
             Vector3 pivot, HexCell pivotCell,
             Vector3 left, HexCell leftCell,
@@ -237,7 +267,17 @@ namespace TheZooMustGrow
             {
                 if (hasRightWall)
                 {
-                    AddWallSegment(pivot, left, pivot, right);
+                    // Determine if there is a tower
+                    bool hasTower = false;
+                    
+                    // No towers on slopes
+                    if (leftCell.Elevation == rightCell.Elevation)
+                    {
+                        HexHash hash = HexMetrics.SampleHashGrid(
+                            (pivot + left + right) * (1f / 3f));
+                        hasTower = hash.e < HexMetrics.wallTowerThreshold;
+                    }
+                    AddWallSegment(pivot, left, pivot, right, hasTower);
                 }
                 else if (leftCell.Elevation < rightCell.Elevation)
                 {
