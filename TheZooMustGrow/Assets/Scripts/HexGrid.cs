@@ -197,6 +197,15 @@ namespace TheZooMustGrow
             }
         }
 
+        public void FindDistancesTo(HexCell cell)
+        {
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cells[i].Distance =
+                    cell.coordinates.DistanceTo(cells[i].coordinates);
+            }
+        }
+
         public void Save(BinaryWriter writer)
         {
             writer.Write(cellCountX);

@@ -82,6 +82,10 @@ namespace TheZooMustGrow
                 {
                     EditCells(currentCell);
                 }
+                else
+                {
+                    hexGrid.FindDistancesTo(currentCell);
+                }
 
                 previousCell = currentCell;
             }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.IO;
+using TMPro;
 
 namespace TheZooMustGrow
 {
@@ -292,6 +293,20 @@ namespace TheZooMustGrow
             }
         }
 
+        private int distance;
+        public int Distance
+        {
+            get
+            {
+                return distance;
+            }
+            set
+            {
+                distance = value;
+                UpdateDistanceLabel();
+            }
+        }
+
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
         /// </summary>
@@ -502,6 +517,12 @@ namespace TheZooMustGrow
         {
             int difference = elevation - GetNeighbor(direction).elevation;
             return difference >= 0 ? difference : -difference;
+        }
+
+        void UpdateDistanceLabel()
+        {
+            TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
+            label.SetText(distance.ToString());
         }
 
         public void Save(BinaryWriter writer)
