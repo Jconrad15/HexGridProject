@@ -516,7 +516,6 @@ namespace TheZooMustGrow
             writer.Write((byte)farmLevel);
             writer.Write((byte)plantLevel);
             writer.Write((byte)specialIndex);
-
             writer.Write(walled);
 
             if (hasIncomingRiver)
@@ -552,16 +551,13 @@ namespace TheZooMustGrow
         public void Load(BinaryReader reader)
         {
             terrainTypeIndex = reader.ReadByte();
-            
             elevation = reader.ReadByte();
             RefreshPosition();
-
             waterLevel = reader.ReadByte();
             urbanLevel = reader.ReadByte();
             farmLevel = reader.ReadByte();
             plantLevel = reader.ReadByte();
             specialIndex = reader.ReadByte();
-
             walled = reader.ReadBoolean();
 
             byte riverData = reader.ReadByte();
@@ -575,6 +571,7 @@ namespace TheZooMustGrow
                 hasIncomingRiver = false;
             }
 
+            riverData = reader.ReadByte();
             if (riverData >= 128)
             {
                 hasOutgoingRiver = true;
@@ -590,7 +587,6 @@ namespace TheZooMustGrow
             {
                 roads[i] = (roadFlags & (1 << i)) != 0;
             }
-
         }
 
     }
