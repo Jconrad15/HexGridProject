@@ -191,11 +191,11 @@ namespace TheZooMustGrow
             }
         }
 
-        private Color color;
+/*        private Color color;
         public Color Color
         {
             get { return HexMetrics.colors[terrainTypeIndex]; }
-        }
+        }*/
 
         // Features
         private int urbanLevel;

@@ -23,13 +23,13 @@ namespace TheZooMustGrow
 
         public int seed;
 
-        public Color[] colors;
+        //public Color[] colors;
 
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
-            HexMetrics.colors = colors;
+            //HexMetrics.colors = colors;
 
             CreateMap(cellCountX, cellCountZ);
         }
@@ -97,7 +97,7 @@ namespace TheZooMustGrow
             {
                 HexMetrics.noiseSource = noiseSource;
                 HexMetrics.InitializeHashGrid(seed);
-                HexMetrics.colors = colors;
+                //HexMetrics.colors = colors;
             }
         }
 
