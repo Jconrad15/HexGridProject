@@ -206,7 +206,7 @@ namespace TheZooMustGrow
         }
 
         /// <summary>
-        /// Breadth-first search to find distances between cells
+        /// Dijkstra's algorithm to find distances between cells
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
@@ -220,22 +220,23 @@ namespace TheZooMustGrow
             }
 
             WaitForSeconds delay = new WaitForSeconds(1 / 60f);
-            Queue<HexCell> frontier = new Queue<HexCell>();
+            List<HexCell> frontier = new List<HexCell>();
 
             // Current cell is distance 0
             cell.Distance = 0;
-            frontier.Enqueue(cell);
+            frontier.Add(cell);
 
             // While a hex is still in the queue
             while (frontier.Count > 0)
             {
                 yield return delay;
-                HexCell current = frontier.Dequeue();
+                HexCell current = frontier[0];
+                frontier.RemoveAt(0);
                 for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
                 {
                     HexCell neighbor = current.GetNeighbor(d);
-                    // If the neighbor exists and has not yet been searched
-                    if (neighbor == null || neighbor.Distance != int.MaxValue)
+                    // If the neighbor exists
+                    if (neighbor == null)
                     {
                         continue;
                     }
@@ -246,13 +247,43 @@ namespace TheZooMustGrow
                         continue;
                     }
 
-                    if (current.GetEdgeType(neighbor) == HexEdgeType.Cliff)
+                    HexEdgeType edgeType = current.GetEdgeType(neighbor);
+                    if (edgeType == HexEdgeType.Cliff)
                     {
                         continue;
                     }
 
-                    neighbor.Distance = current.Distance + 1;
-                    frontier.Enqueue(neighbor);
+                    // Increase search cost if there is no road.
+                    int distance = current.Distance;
+                    if (current.HasRoadThroughEdge(d))
+                    {
+                        distance += 1;
+                    }
+                    else if (current.Walled != neighbor.Walled)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        // Add costs for slopes vs flat
+                        distance += edgeType == HexEdgeType.Flat ? 5 : 10;
+                        // Add costs or features
+                        distance += neighbor.UrbanLevel + neighbor.FarmLevel +
+                            neighbor.PlantLevel;
+                    }
+
+                    if (neighbor.Distance == int.MaxValue)
+                    {
+                        neighbor.Distance = distance;
+                        frontier.Add(neighbor);
+                    }
+                    else if (distance < neighbor.Distance)
+                    {
+                        neighbor.Distance = distance;
+                    }
+
+                    // Sort the frontier
+                    frontier.Sort((x, y) => x.Distance.CompareTo(y.Distance));
                 }
             }
         }
