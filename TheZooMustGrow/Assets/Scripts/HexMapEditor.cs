@@ -284,6 +284,9 @@ namespace TheZooMustGrow
             string path = Path.Combine(Application.persistentDataPath, "test.map");
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
             {
+                // First write a 0 to use as a header
+                int header = 0;
+                writer.Write(header);
                 hexGrid.Save(writer);
             }
         }
@@ -293,7 +296,16 @@ namespace TheZooMustGrow
             string path = Path.Combine(Application.persistentDataPath, "test.map");
             using (BinaryReader reader = new BinaryReader(File.OpenRead(path)))
             {
-                hexGrid.Load(reader);
+                // Read in the header
+                int header = reader.ReadInt32();
+                if (header == 0)
+                {
+                    hexGrid.Load(reader);
+                }
+                else
+                {
+                    Debug.LogWarning("Unknown map format " + header);
+                }
             }
 
         }
