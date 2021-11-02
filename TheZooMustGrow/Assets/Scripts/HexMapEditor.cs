@@ -278,37 +278,5 @@ namespace TheZooMustGrow
         {
             activeTerrainTypeIndex = index;
         }
-
-        public void Save()
-        {
-            string path = Path.Combine(Application.persistentDataPath, "test.map");
-            using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
-            {
-                // Create a header to indicate a version
-                int header = 1;
-                writer.Write(header);
-                hexGrid.Save(writer);
-            }
-        }
-
-        public void Load()
-        {
-            string path = Path.Combine(Application.persistentDataPath, "test.map");
-            using (BinaryReader reader = new BinaryReader(File.OpenRead(path)))
-            {
-                // Read in the header
-                int header = reader.ReadInt32();
-                if (header <= 1)
-                {
-                    hexGrid.Load(reader, header);
-                    HexMapCamera.ValidatePosition();
-                }
-                else
-                {
-                    Debug.LogWarning("Unknown map format " + header);
-                }
-            }
-
-        }
     }
 }
