@@ -522,7 +522,8 @@ namespace TheZooMustGrow
         void UpdateDistanceLabel()
         {
             TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
-            label.SetText(distance.ToString());
+            string distanceText = distance == int.MaxValue ? "" : distance.ToString();
+            label.SetText(distanceText);
         }
 
         public void Save(BinaryWriter writer)

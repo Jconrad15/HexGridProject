@@ -2,6 +2,8 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace TheZooMustGrow
 {
@@ -199,10 +201,59 @@ namespace TheZooMustGrow
 
         public void FindDistancesTo(HexCell cell)
         {
+            StopAllCoroutines();
+            StartCoroutine(Search(cell));
+        }
+
+        /// <summary>
+        /// Breadth-first search to find distances between cells
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <returns></returns>
+        IEnumerator Search(HexCell cell)
+        {
+            // First set all cell distances to max value
+            // to track which distances have been determined.
             for (int i = 0; i < cells.Length; i++)
             {
-                cells[i].Distance =
-                    cell.coordinates.DistanceTo(cells[i].coordinates);
+                cells[i].Distance = int.MaxValue;
+            }
+
+            WaitForSeconds delay = new WaitForSeconds(1 / 60f);
+            Queue<HexCell> frontier = new Queue<HexCell>();
+
+            // Current cell is distance 0
+            cell.Distance = 0;
+            frontier.Enqueue(cell);
+
+            // While a hex is still in the queue
+            while (frontier.Count > 0)
+            {
+                yield return delay;
+                HexCell current = frontier.Dequeue();
+                for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+                {
+                    HexCell neighbor = current.GetNeighbor(d);
+                    // If the neighbor exists and has not yet been searched
+                    if (neighbor == null || neighbor.Distance != int.MaxValue)
+                    {
+                        continue;
+                    }
+
+                    // Skip if underwater
+                    if (neighbor.IsUnderwater)
+                    {
+                        continue;
+                    }
+
+                    if (current.GetEdgeType(neighbor) == HexEdgeType.Cliff)
+                    {
+                        continue;
+                    }
+
+                    neighbor.Distance = current.Distance + 1;
+                    frontier.Enqueue(neighbor);
+                }
             }
         }
 
@@ -219,7 +270,8 @@ namespace TheZooMustGrow
 
         public void Load(BinaryReader reader, int header)
         {
-            
+            StopAllCoroutines();
+
             // Old default size
             int x = 20, z = 15;
             
