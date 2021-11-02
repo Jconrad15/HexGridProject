@@ -21,11 +21,25 @@ namespace TheZooMustGrow
         // Bounding related parameters
         public HexGrid grid;
 
+        private static HexMapCamera instance;
+
+        public static bool Locked
+        {
+            set
+            {
+                instance.enabled = !value;
+            }
+        }
 
         private void Awake()
         {
             swivel = transform.GetChild(0);
             stick = swivel.GetChild(0);
+        }
+
+        void OnEnable()
+        {
+            instance = this;
         }
 
         void Update()
@@ -104,17 +118,22 @@ namespace TheZooMustGrow
         {
             // The X position has a minimum of zero, and a maximum defined by the map size minus a 0.5 offset
             float xMax =
-                ((grid.chunkCountX * HexMetrics.chunkSizeX) - 0.5f) *
+                ((grid.cellCountX * HexMetrics.chunkSizeX) - 0.5f) *
                 (2f * HexMetrics.innerRadius);
             position.x = Mathf.Clamp(position.x, 0f, xMax);
 
             // The Z position has a minimum of zero, and a maximum defined by the map size minus a 1 offset
             float zMax =
-                ((grid.chunkCountZ * HexMetrics.chunkSizeZ) - 1) *
+                ((grid.cellCountZ * HexMetrics.chunkSizeZ) - 1) *
                 (1.5f * HexMetrics.outerRadius);
             position.z = Mathf.Clamp(position.z, 0f, zMax);
 
             return position;
+        }
+
+        public static void ValidatePosition()
+        {
+            instance.AdjustPosition(0f, 0f);
         }
 
     }
