@@ -4,6 +4,7 @@ Shader "Custom/Terrain"
     {
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex("Terrain Texture Array", 2DArray) = "white" {}
+        _GridTex("Grid Texture", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
     }
@@ -19,7 +20,11 @@ Shader "Custom/Terrain"
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.5
 
+        #pragma multi_compile _ GRID_ON
+
         UNITY_DECLARE_TEX2DARRAY(_MainTex);
+
+        sampler2D _GridTex;
 
         struct Input
         {
@@ -52,14 +57,31 @@ Shader "Custom/Terrain"
             return c * IN.color[index];
         }
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
-        {
+        void surf(Input IN, inout SurfaceOutputStandard o) {
             fixed4 c =
                 GetTerrainColor(IN, 0) +
                 GetTerrainColor(IN, 1) +
                 GetTerrainColor(IN, 2);
-            o.Albedo = c.rgb * _Color;
-            // Metallic and smoothness come from slider variables
+
+            // Default to 1
+            fixed4 grid1 = 1;
+            fixed4 grid2 = 1;
+
+            #if defined(GRID_ON)
+            // Small grid
+            float2 gridUV1 = IN.worldPos.xz;
+            gridUV1.x *= 2;
+            gridUV1.y *= 2;
+            grid1 = tex2D(_GridTex, gridUV1);
+
+            // Streched actual size grid
+            float2 gridUV2 = IN.worldPos.xz;
+            gridUV2.x *= 1 / (4 * 8.66025404);
+            gridUV2.y *= 1 / (2 * 15.0);
+            grid2 = tex2D(_GridTex, gridUV2);
+            #endif
+            
+            o.Albedo = c.rgb * grid1 * grid2 * _Color;
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;

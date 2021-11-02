@@ -38,6 +38,13 @@ namespace TheZooMustGrow
         HexDirection dragDirection;
         HexCell previousCell;
 
+        public Material terrainMaterial;
+
+        void Awake()
+        {
+            terrainMaterial.DisableKeyword("GRID_ON");
+        }
+
         private void Update()
         {
             if (Input.GetMouseButton(0) &&
@@ -277,6 +284,18 @@ namespace TheZooMustGrow
         public void SetTerrainTypeIndex(int index)
         {
             activeTerrainTypeIndex = index;
+        }
+
+        public void ShowGrid(bool visible)
+        {
+            if (visible)
+            {
+                terrainMaterial.EnableKeyword("GRID_ON");
+            }
+            else
+            {
+                terrainMaterial.DisableKeyword("GRID_ON");
+            }
         }
     }
 }
