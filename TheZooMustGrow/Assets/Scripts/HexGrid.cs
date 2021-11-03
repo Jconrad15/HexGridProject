@@ -28,6 +28,7 @@ namespace TheZooMustGrow
         //public Color[] colors;
 
         HexCellPriorityQueue searchFrontier;
+        int searchFrontierPhase;
 
         private void Awake()
         {
@@ -217,6 +218,8 @@ namespace TheZooMustGrow
         /// <returns></returns>
         private void Search(HexCell fromCell, HexCell toCell, int speed)
         {
+            searchFrontierPhase += 2;
+
             // Initialize the searchFrontier priority queue
             if (searchFrontier == null)
             {
@@ -227,19 +230,18 @@ namespace TheZooMustGrow
                 searchFrontier.Clear();
             }
 
-            // First set all cell distances to max value
-            // to track which distances have been determined.
+            // Set all labels and highlights
             for (int i = 0; i < cells.Length; i++)
             {
-                cells[i].Distance = int.MaxValue;
                 cells[i].SetLabel(null);
-                // Disable all highlights
                 cells[i].DisableHighlight();
             }
+
             // Enable starting highlight
             fromCell.EnableHighlight(Color.blue);
 
             // Current cell is distance 0
+            fromCell.SearchPhase = searchFrontierPhase;
             fromCell.Distance = 0;
             searchFrontier.Enqueue(fromCell);
 
@@ -247,6 +249,7 @@ namespace TheZooMustGrow
             while (searchFrontier.Count > 0)
             {
                 HexCell current = searchFrontier.Dequeue();
+                current.SearchPhase += 1;
 
                 // If we have reached the toCell, exit while
                 if (current == toCell) 
@@ -268,8 +271,9 @@ namespace TheZooMustGrow
                 for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
                 {
                     HexCell neighbor = current.GetNeighbor(d);
-                    // If the neighbor exists
-                    if (neighbor == null)
+
+                    if (neighbor == null ||
+                        neighbor.SearchPhase >searchFrontierPhase)
                     {
                         continue;
                     }
@@ -313,8 +317,10 @@ namespace TheZooMustGrow
                         distance = turn * speed + moveCost;
                     }
 
-                    if (neighbor.Distance == int.MaxValue)
+                    if (neighbor.SearchPhase < searchFrontierPhase)
                     {
+                        neighbor.SearchPhase = searchFrontierPhase;
+
                         neighbor.Distance = distance;
                         neighbor.PathFrom = current;
                         // Estimate remaining distance

@@ -322,6 +322,10 @@ namespace TheZooMustGrow
         // Helps create a linked list for the priority queue
         public HexCell NextWithSamePriority { get; set; }
 
+        // 0 == not reached
+        // 1 == in frontier
+        // 2 == taken out of frontier
+        public int SearchPhase { get; set; }
 
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
