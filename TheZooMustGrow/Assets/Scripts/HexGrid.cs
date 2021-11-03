@@ -33,7 +33,15 @@ namespace TheZooMustGrow
         int searchFrontierPhase;
 
         HexCell currentPathFrom, currentPathTo;
+
         bool currentPathExists;
+        public bool HasPath
+        {
+            get
+            {
+                return currentPathExists;
+            }
+        }
 
         private List<HexUnit> units = new List<HexUnit>();
 
@@ -270,8 +278,8 @@ namespace TheZooMustGrow
                         continue;
                     }
 
-                    // Skip if underwater
-                    if (neighbor.IsUnderwater)
+                    // Skip if underwater or has unit
+                    if (neighbor.IsUnderwater || neighbor.Unit)
                     {
                         continue;
                     }
@@ -349,7 +357,7 @@ namespace TheZooMustGrow
             currentPathTo.EnableHighlight(Color.red);
         }
 
-        void ClearPath()
+        public void ClearPath()
         {
             if (currentPathExists)
             {
@@ -395,6 +403,15 @@ namespace TheZooMustGrow
             unit.Die();
         }
 
+        public HexCell GetCell(Ray ray)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                return GetCell(hit.point);
+            }
+            return null;
+        }
 
         public void Save(BinaryWriter writer)
         {

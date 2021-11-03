@@ -2344,6 +2344,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 185250791}
   m_CullTransparentMesh: 1
+--- !u!1 &194076836
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 194076837}
+  - component: {fileID: 194076838}
+  m_Layer: 0
+  m_Name: Game UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &194076837
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194076836}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 803100430}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &194076838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194076836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1e4f3da37c2f3d4ba0c3941501dc18c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grid: {fileID: 585186749}
 --- !u!1 &230561373
 GameObject:
   m_ObjectHideFlags: 0
@@ -5729,7 +5773,7 @@ GameObject:
   - component: {fileID: 554906744}
   - component: {fileID: 554906745}
   m_Layer: 5
-  m_Name: Grid Toggle (1)
+  m_Name: EditMode Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5805,6 +5849,18 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1740426415}
         m_TargetAssemblyTypeName: TheZooMustGrow.HexMapEditor, Assembly-CSharp
+        m_MethodName: SetEditMode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 194076838}
+        m_TargetAssemblyTypeName: TheZooMustGrow.HexGameUI, Assembly-CSharp
         m_MethodName: SetEditMode
         m_Mode: 0
         m_Arguments:
@@ -7650,6 +7706,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 194076837}
   - {fileID: 1740426419}
   - {fileID: 1697817633}
   - {fileID: 852097614}
@@ -8125,7 +8182,7 @@ RectTransform:
   - {fileID: 2140351673}
   - {fileID: 1478421301}
   m_Father: {fileID: 803100430}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -14313,7 +14370,7 @@ RectTransform:
   - {fileID: 2120535168}
   - {fileID: 1679309903}
   m_Father: {fileID: 803100430}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -14769,7 +14826,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hexGrid: {fileID: 585186749}
   terrainMaterial: {fileID: 2100000, guid: 5aea54978a9569842a70ceccc3bf4dfb, type: 2}
-  unitPrefab: {fileID: 7352466875250543990, guid: d1d3cf4508a043a429257eea0a942c48, type: 3}
 --- !u!114 &1740426416
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14845,7 +14901,7 @@ RectTransform:
   - {fileID: 1941116422}
   - {fileID: 1179046733}
   m_Father: {fileID: 803100430}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -16556,7 +16612,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 803100430}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2009398874
 GameObject:

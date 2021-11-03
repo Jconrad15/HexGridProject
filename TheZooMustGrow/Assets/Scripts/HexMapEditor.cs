@@ -32,23 +32,18 @@ namespace TheZooMustGrow
         bool applyPlantLevel;
         bool applySpecialIndex;
 
-        bool editMode;
-
         int brushSize;
 
         bool isDrag;
         HexDirection dragDirection;
         HexCell previousCell;
 
-        HexCell searchFromCell;
-        HexCell searchToCell;
-        KeyCode searchKey = KeyCode.LeftShift;
-
         public Material terrainMaterial;
 
         void Awake()
         {
             terrainMaterial.DisableKeyword("GRID_ON");
+            SetEditMode(false);
         }
 
         private void Update()
@@ -91,40 +86,7 @@ namespace TheZooMustGrow
                     isDrag = false;
                 }
 
-                if (editMode)
-                {
-                    EditCells(currentCell);
-                }
-                else if (Input.GetKey(searchKey) && searchToCell != currentCell)
-                {
-                    if (searchFromCell != currentCell)
-                    {
-                        // If the user uses the search key to start a
-                        // search from the start to the end cell
-                        if (searchFromCell)
-                        {
-                            // Disable old highlights
-                            searchFromCell.DisableHighlight();
-                        }
-                        searchFromCell = currentCell;
-                        searchFromCell.EnableHighlight(Color.blue);
-
-                        // If the destination changed, perform a new search
-                        if (searchToCell)
-                        {
-                            hexGrid.FindPath(searchFromCell, searchToCell, 24);
-                        }
-                    }
-                }
-                else if (searchFromCell && searchFromCell != currentCell)
-                {
-                    if (searchToCell != currentCell)
-                    {
-                        searchToCell = currentCell;
-                        hexGrid.FindPath(searchFromCell, searchToCell, 24);
-                    }
-                }
-
+                EditCells(currentCell);
                 previousCell = currentCell;
             }
             else
@@ -135,13 +97,8 @@ namespace TheZooMustGrow
 
         private HexCell GetCellUnderCursor()
         {
-            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(inputRay, out hit))
-            {
-                return hexGrid.GetCell(hit.point);
-            }
-            return null;
+            return
+                hexGrid.GetCell(Camera.main.ScreenPointToRay(Input.mousePosition));
         }
 
         private void CreateUnit()
@@ -376,8 +333,7 @@ namespace TheZooMustGrow
 
         public void SetEditMode(bool toggle)
         {
-            editMode = toggle;
-            hexGrid.ShowUI(!toggle);
+            enabled = toggle;
         }
     }
 }
