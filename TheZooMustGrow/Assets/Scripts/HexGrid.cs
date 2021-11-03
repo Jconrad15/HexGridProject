@@ -203,8 +203,11 @@ namespace TheZooMustGrow
 
         public void FindPath(HexCell fromCell, HexCell toCell, int speed)
         {
-            StopAllCoroutines();
-            StartCoroutine(Search(fromCell, toCell, speed));
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            Search(fromCell, toCell, speed);
+            sw.Stop();
+            Debug.Log(sw.ElapsedMilliseconds);
         }
 
         /// <summary>
@@ -212,7 +215,7 @@ namespace TheZooMustGrow
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        IEnumerator Search(HexCell fromCell, HexCell toCell, int speed)
+        private void Search(HexCell fromCell, HexCell toCell, int speed)
         {
             // Initialize the searchFrontier priority queue
             if (searchFrontier == null)
@@ -235,9 +238,6 @@ namespace TheZooMustGrow
             }
             // Enable starting highlight
             fromCell.EnableHighlight(Color.blue);
-            toCell.EnableHighlight(Color.red);
-
-            WaitForSeconds delay = new WaitForSeconds(1 / 60f);
 
             // Current cell is distance 0
             fromCell.Distance = 0;
@@ -246,18 +246,20 @@ namespace TheZooMustGrow
             // While a hex is still in the queue
             while (searchFrontier.Count > 0)
             {
-                yield return delay;
                 HexCell current = searchFrontier.Dequeue();
 
                 // If we have reached the toCell, exit while
                 if (current == toCell) 
                 {
-                    current = current.PathFrom;
                     while (current != fromCell)
                     {
+                        int turn = current.Distance / speed;
+                        current.SetLabel(turn.ToString());
+
                         current.EnableHighlight(Color.white);
                         current = current.PathFrom;
                     }
+                    toCell.EnableHighlight(Color.red);
                     break; 
                 }
 
@@ -314,7 +316,6 @@ namespace TheZooMustGrow
                     if (neighbor.Distance == int.MaxValue)
                     {
                         neighbor.Distance = distance;
-                        neighbor.SetLabel(turn.ToString());
                         neighbor.PathFrom = current;
                         // Estimate remaining distance
                         neighbor.SearchHeuristic = 
@@ -325,7 +326,6 @@ namespace TheZooMustGrow
                     {
                         int oldPriority = neighbor.SearchPriority;
                         neighbor.Distance = distance;
-                        neighbor.SetLabel(turn.ToString());
                         neighbor.PathFrom = current;
                         searchFrontier.Change(neighbor, oldPriority);
                     }
@@ -346,8 +346,6 @@ namespace TheZooMustGrow
 
         public void Load(BinaryReader reader, int header)
         {
-            StopAllCoroutines();
-
             // Old default size
             int x = 20, z = 15;
             

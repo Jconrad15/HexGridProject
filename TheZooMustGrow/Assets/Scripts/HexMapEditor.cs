@@ -88,26 +88,32 @@ namespace TheZooMustGrow
                 }
                 else if (Input.GetKey(searchKey) && searchToCell != currentCell)
                 {
-                    // If the user uses the search key to start a
-                    // search from the start to the end cell
-                    if (searchFromCell)
+                    if (searchFromCell != currentCell)
                     {
-                        // Disable old highlights
-                        searchFromCell.DisableHighlight();
-                    }
-                    searchFromCell = currentCell;
-                    searchFromCell.EnableHighlight(Color.blue);
+                        // If the user uses the search key to start a
+                        // search from the start to the end cell
+                        if (searchFromCell)
+                        {
+                            // Disable old highlights
+                            searchFromCell.DisableHighlight();
+                        }
+                        searchFromCell = currentCell;
+                        searchFromCell.EnableHighlight(Color.blue);
 
-                    // If the destination changed, perform a new search
-                    if (searchToCell)
-                    {
-                        hexGrid.FindPath(searchFromCell, searchToCell, 24);
+                        // If the destination changed, perform a new search
+                        if (searchToCell)
+                        {
+                            hexGrid.FindPath(searchFromCell, searchToCell, 24);
+                        }
                     }
                 }
                 else if (searchFromCell && searchFromCell != currentCell)
                 {
-                    searchToCell = currentCell;
-                    hexGrid.FindPath(searchFromCell, searchToCell, 24);
+                    if (searchToCell != currentCell)
+                    {
+                        searchToCell = currentCell;
+                        hexGrid.FindPath(searchFromCell, searchToCell, 24);
+                    }
                 }
 
                 previousCell = currentCell;
