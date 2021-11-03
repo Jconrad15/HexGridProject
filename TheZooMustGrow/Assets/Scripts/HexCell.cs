@@ -304,7 +304,6 @@ namespace TheZooMustGrow
             set
             {
                 distance = value;
-                UpdateDistanceLabel();
             }
         }
 
@@ -332,6 +331,12 @@ namespace TheZooMustGrow
         public HexCell GetNeighbor(HexDirection direction)
         {
             return neighbors[(int)direction];
+        }
+
+        public void SetLabel(string text)
+        {
+            TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
+            label.SetText(text);
         }
 
         /// <summary>
@@ -534,13 +539,6 @@ namespace TheZooMustGrow
         {
             int difference = elevation - GetNeighbor(direction).elevation;
             return difference >= 0 ? difference : -difference;
-        }
-
-        void UpdateDistanceLabel()
-        {
-            TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
-            string distanceText = distance == int.MaxValue ? "" : distance.ToString();
-            label.SetText(distanceText);
         }
 
         /// <summary>
