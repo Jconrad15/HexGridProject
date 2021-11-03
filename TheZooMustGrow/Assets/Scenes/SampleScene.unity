@@ -5921,6 +5921,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f04c47d9d1f6a647b2f2a571d70ec78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unitPrefab: {fileID: 7352466875250543990, guid: d1d3cf4508a043a429257eea0a942c48, type: 3}
   cellCountX: 20
   cellCountZ: 15
   cellPrefab: {fileID: 5269777891100023710, guid: c978ce0cfb909784fbb04735f565cca1, type: 3}

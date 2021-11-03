@@ -9,6 +9,8 @@ namespace TheZooMustGrow
 {
     public class HexGrid : MonoBehaviour
     {
+        public HexUnit unitPrefab;
+
         public int cellCountX = 20, cellCountZ = 15;
 
         private int chunkCountX, chunkCountZ;
@@ -33,11 +35,14 @@ namespace TheZooMustGrow
         HexCell currentPathFrom, currentPathTo;
         bool currentPathExists;
 
+        private List<HexUnit> units = new List<HexUnit>();
+
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
             //HexMetrics.colors = colors;
+            HexUnit.unitPrefab = unitPrefab;
 
             CreateMap(cellCountX, cellCountZ);
         }
@@ -54,6 +59,7 @@ namespace TheZooMustGrow
 
             // Clear old data
             ClearPath();
+            ClearUnits();
             if (chunks != null)
             {
                 for (int i = 0; i < chunks.Length; i++)
@@ -106,6 +112,7 @@ namespace TheZooMustGrow
             {
                 HexMetrics.noiseSource = noiseSource;
                 HexMetrics.InitializeHashGrid(seed);
+                HexUnit.unitPrefab = unitPrefab;
                 //HexMetrics.colors = colors;
             }
         }
@@ -365,20 +372,54 @@ namespace TheZooMustGrow
             currentPathFrom = currentPathTo = null;
         }
 
+        private void ClearUnits()
+        {
+            for (int i = 0; i < units.Count; i++)
+            {
+                units[i].Die();
+            }
+            units.Clear();
+        }
+
+        public void AddUnit(HexUnit unit, HexCell location, float orientation)
+        {
+            units.Add(unit);
+            unit.transform.SetParent(transform, false);
+            unit.Location = location;
+            unit.Orientation = orientation;
+        }
+
+        public void RemoveUnit(HexUnit unit)
+        {
+            units.Remove(unit);
+            unit.Die();
+        }
+
+
         public void Save(BinaryWriter writer)
         {
+            // Save the cell counts
             writer.Write(cellCountX);
             writer.Write(cellCountZ);
 
+            // Save the cell data
             for (int i = 0; i < cells.Length; i++)
             {
                 cells[i].Save(writer);
+            }
+
+            // Save the unit data
+            writer.Write(units.Count);
+            for (int i = 0; i < units.Count; i++)
+            {
+                units[i].Save(writer);
             }
         }
 
         public void Load(BinaryReader reader, int header)
         {
             ClearPath();
+            ClearUnits();
 
             // Old default size
             int x = 20, z = 15;
@@ -408,6 +449,17 @@ namespace TheZooMustGrow
             {
                 chunks[i].Refresh();
             }
+
+            // Load the units
+            if (header >= 2)
+            {
+                int unitCount = reader.ReadInt32();
+                for (int i = 0; i < unitCount; i++)
+                {
+                    HexUnit.Load(reader, this);
+                }
+            }
+
         }
 
 

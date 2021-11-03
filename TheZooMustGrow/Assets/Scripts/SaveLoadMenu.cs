@@ -88,7 +88,7 @@ namespace TheZooMustGrow
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
             {
                 // Create a header to indicate a version
-                int header = 1;
+                int header = 2;
                 writer.Write(header);
                 hexGrid.Save(writer);
             }
@@ -106,7 +106,7 @@ namespace TheZooMustGrow
             {
                 // Read in the header
                 int header = reader.ReadInt32();
-                if (header <= 1)
+                if (header <= 2)
                 {
                     hexGrid.Load(reader, header);
                     HexMapCamera.ValidatePosition();
