@@ -294,6 +294,9 @@ namespace TheZooMustGrow
                     {
                         neighbor.Distance = distance;
                         neighbor.PathFrom = current;
+                        // Estimate remaining distance
+                        neighbor.SearchHeuristic = 
+                            neighbor.coordinates.DistanceTo(toCell.coordinates);
                         frontier.Add(neighbor);
                     }
                     else if (distance < neighbor.Distance)
@@ -302,8 +305,8 @@ namespace TheZooMustGrow
                         neighbor.PathFrom = current;
                     }
 
-                    // Sort the frontier
-                    frontier.Sort((x, y) => x.Distance.CompareTo(y.Distance));
+                    // Sort the frontier based on search priority
+                    frontier.Sort((x, y) => x.SearchPriority.CompareTo(y.SearchPriority));
                 }
             }
         }
