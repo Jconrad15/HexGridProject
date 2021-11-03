@@ -30,6 +30,9 @@ namespace TheZooMustGrow
         HexCellPriorityQueue searchFrontier;
         int searchFrontierPhase;
 
+        HexCell currentPathFrom, currentPathTo;
+        bool currentPathExists;
+
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
@@ -50,6 +53,7 @@ namespace TheZooMustGrow
             }
 
             // Clear old data
+            ClearPath();
             if (chunks != null)
             {
                 for (int i = 0; i < chunks.Length; i++)
@@ -204,11 +208,11 @@ namespace TheZooMustGrow
 
         public void FindPath(HexCell fromCell, HexCell toCell, int speed)
         {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            Search(fromCell, toCell, speed);
-            sw.Stop();
-            Debug.Log(sw.ElapsedMilliseconds);
+            ClearPath();
+            currentPathFrom = fromCell;
+            currentPathTo = toCell;
+            currentPathExists = Search(fromCell, toCell, speed);
+            ShowPath(speed);
         }
 
         /// <summary>
@@ -216,7 +220,7 @@ namespace TheZooMustGrow
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        private void Search(HexCell fromCell, HexCell toCell, int speed)
+        private bool Search(HexCell fromCell, HexCell toCell, int speed)
         {
             searchFrontierPhase += 2;
 
@@ -229,16 +233,6 @@ namespace TheZooMustGrow
             {
                 searchFrontier.Clear();
             }
-
-            // Set all labels and highlights
-            for (int i = 0; i < cells.Length; i++)
-            {
-                cells[i].SetLabel(null);
-                cells[i].DisableHighlight();
-            }
-
-            // Enable starting highlight
-            fromCell.EnableHighlight(Color.blue);
 
             // Current cell is distance 0
             fromCell.SearchPhase = searchFrontierPhase;
@@ -254,16 +248,7 @@ namespace TheZooMustGrow
                 // If we have reached the toCell, exit while
                 if (current == toCell) 
                 {
-                    while (current != fromCell)
-                    {
-                        int turn = current.Distance / speed;
-                        current.SetLabel(turn.ToString());
-
-                        current.EnableHighlight(Color.white);
-                        current = current.PathFrom;
-                    }
-                    toCell.EnableHighlight(Color.red);
-                    break; 
+                    return true;
                 }
 
                 int currentTurn = current.Distance / speed;
@@ -337,6 +322,47 @@ namespace TheZooMustGrow
                     }
                 }
             }
+            return false;
+        }
+
+        void ShowPath(int speed)
+        {
+            if (currentPathExists)
+            {
+                HexCell current = currentPathTo;
+                while (current != currentPathFrom)
+                {
+                    int turn = current.Distance / speed;
+                    current.SetLabel(turn.ToString());
+                    current.EnableHighlight(Color.white);
+                    current = current.PathFrom;
+                }
+            }
+            currentPathFrom.EnableHighlight(Color.blue);
+            currentPathTo.EnableHighlight(Color.red);
+        }
+
+        void ClearPath()
+        {
+            if (currentPathExists)
+            {
+                HexCell current = currentPathTo;
+                while (current != currentPathFrom)
+                {
+                    current.SetLabel(null);
+                    current.DisableHighlight();
+                    current = current.PathFrom;
+                }
+                current.DisableHighlight();
+                currentPathExists = false;
+            }
+            else if (currentPathFrom)
+            {
+                // Clear endpoints from potential invalid paths
+                currentPathFrom.DisableHighlight();
+                currentPathTo.DisableHighlight();
+            }
+            currentPathFrom = currentPathTo = null;
         }
 
         public void Save(BinaryWriter writer)
@@ -352,6 +378,8 @@ namespace TheZooMustGrow
 
         public void Load(BinaryReader reader, int header)
         {
+            ClearPath();
+
             // Old default size
             int x = 20, z = 15;
             
