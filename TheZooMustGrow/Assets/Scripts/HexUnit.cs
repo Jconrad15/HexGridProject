@@ -12,6 +12,7 @@ namespace TheZooMustGrow
 		List<HexCell> pathToTravel;
 
 		const float travelSpeed = 4f;
+		const float rotationSpeed = 180f;
 
 
 		HexCell location;
@@ -23,8 +24,8 @@ namespace TheZooMustGrow
 			}
 			set
 			{
-				// Remove unit from cell
-				if (location)
+				// Remove unit from previous cell
+				if (location != null)
                 {
 					location.Unit = null;
                 }
@@ -73,7 +74,7 @@ namespace TheZooMustGrow
 		/// </summary>
 		public void Die()
         {
-			location.Unit = null;
+			Location.Unit = null;
 			Destroy(gameObject);
         }
 
@@ -84,7 +85,7 @@ namespace TheZooMustGrow
 
 		public void Travel(List<HexCell> path)
         {
-			location = path[path.Count - 1];
+			Location = path[path.Count - 1];
 			pathToTravel = path;
 			StopAllCoroutines();
 			StartCoroutine(TravelPath());
@@ -93,6 +94,8 @@ namespace TheZooMustGrow
 		private IEnumerator TravelPath()
 		{
 			Vector3 a, b, c = pathToTravel[0].Position;
+			transform.localPosition = c;
+			yield return LookAt(pathToTravel[1].Position);
 
 			float t = Time.deltaTime * travelSpeed;
 			for (int i = 1; i < pathToTravel.Count; i++)
@@ -104,25 +107,39 @@ namespace TheZooMustGrow
 				for (; t < 1f; t += Time.deltaTime * travelSpeed)
 				{
 					transform.localPosition = Bezier.GetPoint(a, b, c, t);
+					// Look in the correct direction
+					Vector3 d = Bezier.GetDerivative(a, b, c, t);
+					d.y = 0f;
+					transform.localRotation = Quaternion.LookRotation(d);
+
 					yield return null;
 				}
 				t -= 1f;
 			}
 			
+			// For the last HexCell
 			a = c;
 			b = pathToTravel[pathToTravel.Count - 1].Position;
 			c = b; 
 			for (; t < 1f; t += Time.deltaTime * travelSpeed)
 			{
 				transform.localPosition = Bezier.GetPoint(a, b, c, t);
+				// Look in the correct direction
+				Vector3 d = Bezier.GetDerivative(a, b, c, t);
+				d.y = 0f;
+				transform.localRotation = Quaternion.LookRotation(d);
 				yield return null;
 			}
 
 			// Make sure the final location is correct;
 			transform.localPosition = location.Position;
+			orientation = transform.localRotation.eulerAngles.y;
+
+			ListPool<HexCell>.Add(pathToTravel);
+			pathToTravel = null;
 		}
 
-		private void OnDrawGizmos()
+/*		private void OnDrawGizmos()
         {
             if (pathToTravel == null || pathToTravel.Count == 0) { return; }
 
@@ -148,13 +165,35 @@ namespace TheZooMustGrow
 			{
 				Gizmos.DrawSphere(Bezier.GetPoint(a, b, c, t), 2f);
 			}
+		}*/
 
+		private IEnumerator LookAt(Vector3 point)
+		{
+			point.y = transform.localPosition.y;
 
+			// Slerp between two quaternions to rotate
+			Quaternion fromRotation = transform.localRotation;
+			Quaternion toRotation =
+				Quaternion.LookRotation(point - transform.localPosition);
+
+			float angle = Quaternion.Angle(fromRotation, toRotation);
+			if (angle > 0f)
+			{
+				float speed = rotationSpeed / angle;
+
+				for (float t = Time.deltaTime * speed; t < 1f; t += Time.deltaTime * speed)
+				{
+					transform.localRotation =
+						Quaternion.Slerp(fromRotation, toRotation, t);
+					yield return null;
+				}
+
+				transform.LookAt(point);
+				orientation = transform.localRotation.eulerAngles.y;
+			}
 		}
 
-
-
-        public void Save(BinaryWriter writer)
+		public void Save(BinaryWriter writer)
 		{
 			location.coordinates.Save(writer);
 			writer.Write(orientation);
