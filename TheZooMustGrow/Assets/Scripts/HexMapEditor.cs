@@ -46,6 +46,8 @@ namespace TheZooMustGrow
 
         public Material terrainMaterial;
 
+        public HexUnit unitPrefab;
+
         void Awake()
         {
             terrainMaterial.DisableKeyword("GRID_ON");
@@ -53,25 +55,34 @@ namespace TheZooMustGrow
 
         private void Update()
         {
-            if (Input.GetMouseButton(0) &&
-                !EventSystem.current.IsPointerOverGameObject())
+            if (!EventSystem.current.IsPointerOverGameObject())
             {
-                HandleInput();
+                if (Input.GetMouseButton(0))
+                {
+                    HandleInput();
+                    return;
+                }
+                if (Input.GetKeyDown(KeyCode.U))
+                {
+                    if (Input.GetKey(KeyCode.LeftShift))
+                    {
+                        DestroyUnit();
+                    }
+                    else
+                    {
+                        CreateUnit();
+                    }
+                    return;
+                }
             }
-            else
-            {
-                previousCell = null;
-            }
+            previousCell = null;
         }
 
         private void HandleInput()
         {
-            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(inputRay, out hit))
+            HexCell currentCell = GetCellUnderCursor();
+            if (currentCell)
             {
-                HexCell currentCell = hexGrid.GetCell(hit.point);
-
                 // Check for a drag
                 if (previousCell && previousCell != currentCell)
                 {
@@ -121,6 +132,38 @@ namespace TheZooMustGrow
             else
             {
                 previousCell = null;
+            }
+        }
+
+        private HexCell GetCellUnderCursor()
+        {
+            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(inputRay, out hit))
+            {
+                return hexGrid.GetCell(hit.point);
+            }
+            return null;
+        }
+
+        private void CreateUnit()
+        {
+            HexCell cell = GetCellUnderCursor();
+            if (cell && !cell.Unit)
+            {
+                HexUnit unit = Instantiate(unitPrefab);
+                unit.transform.SetParent(hexGrid.transform, false);
+                unit.Location = cell;
+                unit.Orientation = Random.Range(0, 360f);
+            }
+        }
+
+        private void DestroyUnit()
+        {
+            HexCell cell = GetCellUnderCursor();
+            if (cell && cell.Unit)
+            {
+                cell.Unit.Die();
             }
         }
 

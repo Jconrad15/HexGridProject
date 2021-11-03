@@ -327,6 +327,8 @@ namespace TheZooMustGrow
         // 2 == taken out of frontier
         public int SearchPhase { get; set; }
 
+        public HexUnit Unit { get; set; }
+
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
         /// </summary>
@@ -378,6 +380,19 @@ namespace TheZooMustGrow
                         neighbor.chunk.Refresh();
                     }
                 }
+                if (Unit)
+                {
+                    Unit.ValidateLocation();
+                }
+            }
+        }
+
+        void RefreshSelfOnly()
+        {
+            chunk.Refresh();
+            if (Unit)
+            {
+                Unit.ValidateLocation();
             }
         }
 
@@ -427,11 +442,6 @@ namespace TheZooMustGrow
         {
             RemoveOutgoingRiver();
             RemoveIncomingRiver();
-        }
-
-        void RefreshSelfOnly()
-        {
-            chunk.Refresh();
         }
 
         void RefreshPosition()
