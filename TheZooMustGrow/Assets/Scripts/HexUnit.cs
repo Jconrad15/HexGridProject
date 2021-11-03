@@ -1,14 +1,20 @@
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TheZooMustGrow
 {
     public class HexUnit : MonoBehaviour
     {
-
 		public static HexUnit unitPrefab;
 
-        HexCell location;
+		List<HexCell> pathToTravel;
+
+		const float travelSpeed = 4f;
+
+
+		HexCell location;
 		public HexCell Location
 		{
 			get
@@ -43,6 +49,17 @@ namespace TheZooMustGrow
 			}
 		}
 
+		
+		void OnEnable()
+		{
+			// Make sure the unit is in the correct place if
+			// recompiled during movement animation
+			if (location)
+			{
+				transform.localPosition = location.Position;
+			}
+		}
+
 		/// <summary>
 		/// Updates the position of the unit.
 		/// </summary>
@@ -65,7 +82,47 @@ namespace TheZooMustGrow
 			return !cell.IsUnderwater && !cell.Unit;
 		}
 
-		public void Save(BinaryWriter writer)
+		public void Travel(List<HexCell> path)
+        {
+			location = path[path.Count - 1];
+			pathToTravel = path;
+			StopAllCoroutines();
+			StartCoroutine(TravelPath());
+		}
+
+		private IEnumerator TravelPath()
+		{
+			for (int i = 1; i < pathToTravel.Count; i++)
+			{
+				Vector3 a = pathToTravel[i - 1].Position;
+				Vector3 b = pathToTravel[i].Position;
+				for (float t = 0f; t < 1f; t += Time.deltaTime * travelSpeed)
+				{
+					transform.localPosition = Vector3.Lerp(a, b, t);
+					yield return null;
+				}
+			}
+		}
+
+		private void OnDrawGizmos()
+        {
+            if (pathToTravel == null || pathToTravel.Count == 0) { return; }
+
+			for (int i = 1; i < pathToTravel.Count; i++)
+			{
+				Vector3 a = pathToTravel[i - 1].Position;
+				Vector3 b = pathToTravel[i].Position;
+				for (float t = 0f; t < 1f; t += 0.1f)
+				{
+					Gizmos.DrawSphere(Vector3.Lerp(a, b, t), 2f);
+				}
+			}
+
+		}
+
+
+
+        public void Save(BinaryWriter writer)
 		{
 			location.coordinates.Save(writer);
 			writer.Write(orientation);
