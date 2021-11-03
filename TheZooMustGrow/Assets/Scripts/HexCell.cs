@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.IO;
 using TMPro;
+using UnityEngine.UI;
 
 namespace TheZooMustGrow
 {
@@ -524,6 +525,25 @@ namespace TheZooMustGrow
             TextMeshProUGUI label = uiRect.GetComponent<TextMeshProUGUI>();
             string distanceText = distance == int.MaxValue ? "" : distance.ToString();
             label.SetText(distanceText);
+        }
+
+        /// <summary>
+        /// Disables the highlight from the cell label.
+        /// </summary>
+        public void DisableHighlight()
+        {
+            Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+            highlight.enabled = false;
+        }
+
+        /// <summary>
+        /// Enables the highlight from the cell label.
+        /// </summary>
+        public void EnableHighlight(Color color)
+        {
+            Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+            highlight.color = color;
+            highlight.enabled = true;
         }
 
         public void Save(BinaryWriter writer)
