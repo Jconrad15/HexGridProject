@@ -40,6 +40,10 @@ namespace TheZooMustGrow
         HexDirection dragDirection;
         HexCell previousCell;
 
+        HexCell searchFromCell;
+        HexCell searchToCell;
+        KeyCode searchKey = KeyCode.LeftShift;
+
         public Material terrainMaterial;
 
         void Awake()
@@ -82,9 +86,28 @@ namespace TheZooMustGrow
                 {
                     EditCells(currentCell);
                 }
-                else
+                else if (Input.GetKey(searchKey) && searchToCell != currentCell)
                 {
-                    hexGrid.FindDistancesTo(currentCell);
+                    // If the user uses the search key to start a
+                    // search from the start to the end cell
+                    if (searchFromCell)
+                    {
+                        // Disable old highlights
+                        searchFromCell.DisableHighlight();
+                    }
+                    searchFromCell = currentCell;
+                    searchFromCell.EnableHighlight(Color.blue);
+
+                    // If the destination changed, perform a new search
+                    if (searchToCell)
+                    {
+                        hexGrid.FindPath(searchFromCell, searchToCell);
+                    }
+                }
+                else if (searchFromCell && searchFromCell != currentCell)
+                {
+                    searchToCell = currentCell;
+                    hexGrid.FindPath(searchFromCell, searchToCell);
                 }
 
                 previousCell = currentCell;

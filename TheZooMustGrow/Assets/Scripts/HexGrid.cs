@@ -199,10 +199,10 @@ namespace TheZooMustGrow
             }
         }
 
-        public void FindDistancesTo(HexCell cell)
+        public void FindPath(HexCell fromCell, HexCell toCell)
         {
             StopAllCoroutines();
-            StartCoroutine(Search(cell));
+            StartCoroutine(Search(fromCell, toCell));
         }
 
         /// <summary>
@@ -210,21 +210,26 @@ namespace TheZooMustGrow
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        IEnumerator Search(HexCell cell)
+        IEnumerator Search(HexCell fromCell, HexCell toCell)
         {
             // First set all cell distances to max value
             // to track which distances have been determined.
             for (int i = 0; i < cells.Length; i++)
             {
                 cells[i].Distance = int.MaxValue;
+                // Disable all highlights
+                cells[i].DisableHighlight();
             }
+            // Enable starting highlight
+            fromCell.EnableHighlight(Color.blue);
+            toCell.EnableHighlight(Color.red);
 
             WaitForSeconds delay = new WaitForSeconds(1 / 60f);
             List<HexCell> frontier = new List<HexCell>();
 
             // Current cell is distance 0
-            cell.Distance = 0;
-            frontier.Add(cell);
+            fromCell.Distance = 0;
+            frontier.Add(fromCell);
 
             // While a hex is still in the queue
             while (frontier.Count > 0)
@@ -232,6 +237,19 @@ namespace TheZooMustGrow
                 yield return delay;
                 HexCell current = frontier[0];
                 frontier.RemoveAt(0);
+
+                // If we have reached the toCell, exit while
+                if (current == toCell) 
+                {
+                    current = current.PathFrom;
+                    while (current != fromCell)
+                    {
+                        current.EnableHighlight(Color.white);
+                        current = current.PathFrom;
+                    }
+                    break; 
+                }
+
                 for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
                 {
                     HexCell neighbor = current.GetNeighbor(d);
@@ -275,11 +293,13 @@ namespace TheZooMustGrow
                     if (neighbor.Distance == int.MaxValue)
                     {
                         neighbor.Distance = distance;
+                        neighbor.PathFrom = current;
                         frontier.Add(neighbor);
                     }
                     else if (distance < neighbor.Distance)
                     {
                         neighbor.Distance = distance;
+                        neighbor.PathFrom = current;
                     }
 
                     // Sort the frontier

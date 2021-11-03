@@ -308,6 +308,8 @@ namespace TheZooMustGrow
             }
         }
 
+        public HexCell PathFrom { get; set; }
+
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
         /// </summary>
