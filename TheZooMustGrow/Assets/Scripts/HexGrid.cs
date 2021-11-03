@@ -27,6 +27,8 @@ namespace TheZooMustGrow
 
         //public Color[] colors;
 
+        HexCellPriorityQueue searchFrontier;
+
         private void Awake()
         {
             HexMetrics.noiseSource = noiseSource;
@@ -212,6 +214,16 @@ namespace TheZooMustGrow
         /// <returns></returns>
         IEnumerator Search(HexCell fromCell, HexCell toCell)
         {
+            // Initialize the searchFrontier priority queue
+            if (searchFrontier == null)
+            {
+                searchFrontier = new HexCellPriorityQueue();
+            }
+            else
+            {
+                searchFrontier.Clear();
+            }
+
             // First set all cell distances to max value
             // to track which distances have been determined.
             for (int i = 0; i < cells.Length; i++)
@@ -225,18 +237,16 @@ namespace TheZooMustGrow
             toCell.EnableHighlight(Color.red);
 
             WaitForSeconds delay = new WaitForSeconds(1 / 60f);
-            List<HexCell> frontier = new List<HexCell>();
 
             // Current cell is distance 0
             fromCell.Distance = 0;
-            frontier.Add(fromCell);
+            searchFrontier.Enqueue(fromCell);
 
             // While a hex is still in the queue
-            while (frontier.Count > 0)
+            while (searchFrontier.Count > 0)
             {
                 yield return delay;
-                HexCell current = frontier[0];
-                frontier.RemoveAt(0);
+                HexCell current = searchFrontier.Dequeue();
 
                 // If we have reached the toCell, exit while
                 if (current == toCell) 
@@ -297,16 +307,15 @@ namespace TheZooMustGrow
                         // Estimate remaining distance
                         neighbor.SearchHeuristic = 
                             neighbor.coordinates.DistanceTo(toCell.coordinates);
-                        frontier.Add(neighbor);
+                        searchFrontier.Enqueue(neighbor);
                     }
                     else if (distance < neighbor.Distance)
                     {
+                        int oldPriority = neighbor.SearchPriority;
                         neighbor.Distance = distance;
                         neighbor.PathFrom = current;
+                        searchFrontier.Change(neighbor, oldPriority);
                     }
-
-                    // Sort the frontier based on search priority
-                    frontier.Sort((x, y) => x.SearchPriority.CompareTo(y.SearchPriority));
                 }
             }
         }

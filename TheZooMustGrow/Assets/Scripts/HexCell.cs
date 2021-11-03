@@ -320,6 +320,9 @@ namespace TheZooMustGrow
             }
         }
 
+        // Helps create a linked list for the priority queue
+        public HexCell NextWithSamePriority { get; set; }
+
 
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
