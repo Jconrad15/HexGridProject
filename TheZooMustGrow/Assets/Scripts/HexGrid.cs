@@ -226,13 +226,13 @@ namespace TheZooMustGrow
             }
         }
 
-        public void FindPath(HexCell fromCell, HexCell toCell, int speed)
+        public void FindPath(HexCell fromCell, HexCell toCell, HexUnit unit)
         {
             ClearPath();
             currentPathFrom = fromCell;
             currentPathTo = toCell;
-            currentPathExists = Search(fromCell, toCell, speed);
-            ShowPath(speed);
+            currentPathExists = Search(fromCell, toCell, unit);
+            ShowPath(unit.Speed);
         }
 
         /// <summary>
@@ -240,8 +240,9 @@ namespace TheZooMustGrow
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        private bool Search(HexCell fromCell, HexCell toCell, int speed)
+        private bool Search(HexCell fromCell, HexCell toCell, HexUnit unit)
         {
+            int speed = unit.Speed;
             searchFrontierPhase += 2;
 
             // Initialize the searchFrontier priority queue
@@ -283,36 +284,15 @@ namespace TheZooMustGrow
                         continue;
                     }
 
-                    // Skip if underwater or has unit
-                    if (neighbor.IsUnderwater || neighbor.Unit)
+                    if (!unit.IsValidDestination(neighbor))
                     {
                         continue;
                     }
 
-                    HexEdgeType edgeType = current.GetEdgeType(neighbor);
-                    if (edgeType == HexEdgeType.Cliff)
+                    int moveCost = unit.GetMoveCost(current, neighbor, d);
+                    if (moveCost < 0)
                     {
                         continue;
-                    }
-
-                    int moveCost;
-
-                    // Increase search cost if there is no road.
-                    if (current.HasRoadThroughEdge(d))
-                    {
-                        moveCost = 1;
-                    }
-                    else if (current.Walled != neighbor.Walled)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        // Add costs for slopes vs flat
-                        moveCost = edgeType == HexEdgeType.Flat ? 5 : 10;
-                        // Add costs or features
-                        moveCost += neighbor.UrbanLevel + neighbor.FarmLevel +
-                            neighbor.PlantLevel;
                     }
 
                     int distance = current.Distance + moveCost;
