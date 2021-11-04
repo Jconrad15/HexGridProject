@@ -20,6 +20,7 @@ Shader "Custom/River"
         #pragma target 3.0
         #include "Water.cginc"
         #include "HexCellData.cginc"
+        #pragma multi_compile _ HEX_MAP_EDIT_MODE
 
         sampler2D _MainTex;
 

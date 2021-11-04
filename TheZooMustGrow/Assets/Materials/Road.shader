@@ -16,6 +16,7 @@ Shader "Custom/Road" {
 			CGPROGRAM
 			#pragma surface surf Standard fullforwardshadows decal:blend vertex:vert
 			#pragma target 3.0
+			#pragma multi_compile _ HEX_MAP_EDIT_MODE
 
 			#include "HexCellData.cginc"
 
