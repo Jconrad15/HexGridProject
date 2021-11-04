@@ -542,6 +542,8 @@ namespace TheZooMustGrow
                 if (!CreateMap(x, z)) { return; }
             }
 
+            bool originalImmediateMode = cellShaderData.ImmediateMode;
+            cellShaderData.ImmediateMode = true;
             // Load each cell's data
             for (int i = 0; i < cells.Length; i++)
             {
@@ -564,6 +566,7 @@ namespace TheZooMustGrow
                 }
             }
 
+            cellShaderData.ImmediateMode = originalImmediateMode;
         }
 
 
