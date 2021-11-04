@@ -23,6 +23,9 @@ namespace TheZooMustGrow
 		[Range(5, 95)]
 		public int landPercentage = 50;
 
+		[Range(1, 5)]
+		public int waterLevel = 3;
+
 		public void GenerateMap(int x, int z)
 		{
 			cellCount = x * z;
@@ -36,7 +39,14 @@ namespace TheZooMustGrow
 				searchFrontier = new HexCellPriorityQueue();
             }
 
+            // Set base water level
+            for (int i = 0; i < cellCount; i++)
+            {
+				grid.GetCell(i).WaterLevel = waterLevel;
+            }
+
 			CreateLand();
+			SetTerrainType();
 
             // Set all search phase variables in cells to zero
             for (int i = 0; i < cellCount; i++)
@@ -72,17 +82,12 @@ namespace TheZooMustGrow
 			while (size < chunkSize && searchFrontier.Count > 0)
             {
 				HexCell current = searchFrontier.Dequeue();
-
-				// If the current cell has not yet been raised
-				if (current.TerrainTypeIndex == 0)
+				current.Elevation += 1;
+				// If the current cell has been raised and check budget
+				if (current.Elevation == waterLevel && --budget == 0)
                 {
-					// Check if the budget has been reached
-					current.TerrainTypeIndex = 1;
-					if (--budget == 0)
-                    {
-						break;
-                    }
-				}
+					break;
+                }
 				size += 1;
 
 				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
@@ -100,6 +105,18 @@ namespace TheZooMustGrow
             }
 			searchFrontier.Clear();
 			return budget;
+        }
+
+		private void SetTerrainType()
+        {
+			for (int i = 0; i < cellCount; i++)
+			{
+				HexCell cell = grid.GetCell(i);
+				if (!cell.IsUnderwater)
+				{
+					cell.TerrainTypeIndex = cell.Elevation - cell.WaterLevel;
+				}
+			}
         }
 
 		private HexCell GetRandomCell()
