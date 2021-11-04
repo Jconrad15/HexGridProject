@@ -34,7 +34,7 @@ Shader "Custom/Terrain"
             float4 color : COLOR;
             float3 worldPos;
             float3 terrain;
-            float3 visibility;
+            float4 visibility;
         };
 
         void vert(inout appdata_full v, out Input data)
@@ -52,7 +52,9 @@ Shader "Custom/Terrain"
             data.visibility.x = cell0.x;
             data.visibility.y = cell1.x;
             data.visibility.z = cell2.x;
-            data.visibility = lerp(0.25, 1, data.visibility);
+            data.visibility.xyz = lerp(0.25, 1, data.visibility.xyz);
+            data.visibility.w =
+                cell0.y * v.color.x + cell1.y * v.color.y + cell2.y * v.color.z;
         }
 
         half _Glossiness;
@@ -97,7 +99,8 @@ Shader "Custom/Terrain"
             grid2 = tex2D(_GridTex, gridUV2);
             #endif
             
-            o.Albedo = c.rgb * grid1 * grid2 * _Color;
+            float explored = IN.visibility.w;
+            o.Albedo = c.rgb * grid1 * grid2 * _Color * explored;
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;

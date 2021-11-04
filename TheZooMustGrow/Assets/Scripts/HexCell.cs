@@ -343,6 +343,8 @@ namespace TheZooMustGrow
 
         public int Index { get; set; }
 
+        public bool IsExplored { get; private set; }
+
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
         /// </summary>
@@ -593,6 +595,7 @@ namespace TheZooMustGrow
             visibility += 1;
             if (visibility == 1)
             {
+                IsExplored = true;
                 ShaderData.RefreshVisibility(this);
             }
         }
@@ -648,9 +651,10 @@ namespace TheZooMustGrow
             }
             writer.Write((byte)roadFlags);
 
+            writer.Write(IsExplored);
         }
 
-        public void Load(BinaryReader reader)
+        public void Load(BinaryReader reader, int header)
         {
             terrainTypeIndex = reader.ReadByte();
             ShaderData.RefreshTerrain(this);
@@ -690,6 +694,9 @@ namespace TheZooMustGrow
             {
                 roads[i] = (roadFlags & (1 << i)) != 0;
             }
+
+            IsExplored = header >= 3 ? reader.ReadBoolean() : false;
+            ShaderData.RefreshVisibility(this);
         }
 
     }

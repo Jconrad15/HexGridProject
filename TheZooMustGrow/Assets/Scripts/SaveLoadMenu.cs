@@ -18,6 +18,8 @@ namespace TheZooMustGrow
 		public RectTransform listContent;
 		public SaveLoadItem itemPrefab;
 
+		const int mapFileVersion = 3;
+
 		public void Open(bool saveMode)
 		{
 			if (saveMode)
@@ -88,8 +90,7 @@ namespace TheZooMustGrow
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
             {
                 // Create a header to indicate a version
-                int header = 2;
-                writer.Write(header);
+                writer.Write(mapFileVersion);
                 hexGrid.Save(writer);
             }
         }
@@ -106,7 +107,7 @@ namespace TheZooMustGrow
             {
                 // Read in the header
                 int header = reader.ReadInt32();
-                if (header <= 2)
+                if (header <= mapFileVersion)
                 {
                     hexGrid.Load(reader, header);
                     HexMapCamera.ValidatePosition();

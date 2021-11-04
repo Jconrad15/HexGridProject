@@ -565,7 +565,7 @@ namespace TheZooMustGrow
             // Load each cell's data
             for (int i = 0; i < cells.Length; i++)
             {
-                cells[i].Load(reader);
+                cells[i].Load(reader, header);
             }
 
             // Refresh all chunks
