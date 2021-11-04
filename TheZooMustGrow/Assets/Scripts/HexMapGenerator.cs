@@ -8,6 +8,9 @@ namespace TheZooMustGrow
 		public HexGrid grid;
 		private int cellCount;
 
+		public int seed;
+		public bool useFixedSeed;
+
 		HexCellPriorityQueue searchFrontier;
 		int searchFrontierPhase;
 
@@ -40,6 +43,17 @@ namespace TheZooMustGrow
 
 		public void GenerateMap(int x, int z)
 		{
+			Random.State originalRandomState = Random.state;
+
+			if (!useFixedSeed)
+			{
+				seed = Random.Range(0, int.MaxValue);
+				seed ^= (int)System.DateTime.Now.Ticks;
+				seed ^= (int)Time.unscaledTime;
+				seed &= int.MaxValue;
+			}
+			Random.InitState(seed);
+
 			cellCount = x * z;
 
 			// Generate base map
@@ -65,6 +79,8 @@ namespace TheZooMustGrow
             {
 				grid.GetCell(i).SearchPhase = 0;
             }
+
+			Random.state = originalRandomState;
 		}
 
 		private void CreateLand()

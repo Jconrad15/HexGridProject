@@ -6348,6 +6348,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 585186749}
+  seed: 0
+  useFixedSeed: 1
   jitterProbability: 0.25
   chunkSizeMin: 30
   chunkSizeMax: 100
