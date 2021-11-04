@@ -13,8 +13,11 @@ namespace TheZooMustGrow
 
 		const float travelSpeed = 4f;
 		const float rotationSpeed = 180f;
+		const int visionRange = 3;
 
+		public HexGrid Grid { get; set; }
 
+		HexCell currentTravelLocation;
 		HexCell location;
 		public HexCell Location
 		{
@@ -25,13 +28,16 @@ namespace TheZooMustGrow
 			set
 			{
 				// Remove unit from previous cell
-				if (location != null)
+				if (location)
                 {
+					// Decrease visibility when leaving a cell
+					Grid.DecreaseVisibility(location, visionRange);
 					location.Unit = null;
                 }
 
 				location = value;
 				value.Unit = this;
+				Grid.IncreaseVisibility(value, visionRange);
 				transform.localPosition = value.Position;
 			}
 		}
@@ -58,6 +64,12 @@ namespace TheZooMustGrow
 			if (location)
 			{
 				transform.localPosition = location.Position;
+				if (currentTravelLocation)
+				{
+					Grid.IncreaseVisibility(location, visionRange);
+					Grid.DecreaseVisibility(currentTravelLocation, visionRange);
+					currentTravelLocation = null;
+				}
 			}
 		}
 
@@ -74,6 +86,10 @@ namespace TheZooMustGrow
 		/// </summary>
 		public void Die()
         {
+			if (location)
+            {
+				Grid.DecreaseVisibility(location, visionRange);
+            }
 			Location.Unit = null;
 			Destroy(gameObject);
         }
@@ -85,8 +101,9 @@ namespace TheZooMustGrow
 
 		public void Travel(List<HexCell> path)
         {
-			Location = path[path.Count - 1];
-			pathToTravel = path;
+			location.Unit = null;
+			location = path[path.Count - 1];
+			location.Unit = this; pathToTravel = path;
 			StopAllCoroutines();
 			StartCoroutine(TravelPath());
 		}
@@ -94,15 +111,20 @@ namespace TheZooMustGrow
 		private IEnumerator TravelPath()
 		{
 			Vector3 a, b, c = pathToTravel[0].Position;
-			transform.localPosition = c;
 			yield return LookAt(pathToTravel[1].Position);
+			Grid.DecreaseVisibility(
+				currentTravelLocation ? currentTravelLocation : pathToTravel[0],
+				visionRange);
 
 			float t = Time.deltaTime * travelSpeed;
 			for (int i = 1; i < pathToTravel.Count; i++)
 			{
+				currentTravelLocation = pathToTravel[i];
 				a = c;
-				b = pathToTravel[i - 1].Position;
+				c = (b + currentTravelLocation.Position) * 0.5f;
 				c = (b + pathToTravel[i].Position) * 0.5f;
+
+				Grid.IncreaseVisibility(pathToTravel[i], visionRange);
 
 				for (; t < 1f; t += Time.deltaTime * travelSpeed)
 				{
@@ -114,13 +136,17 @@ namespace TheZooMustGrow
 
 					yield return null;
 				}
+				Grid.DecreaseVisibility(pathToTravel[i], visionRange);
 				t -= 1f;
 			}
-			
+			currentTravelLocation = null;
+
 			// For the last HexCell
 			a = c;
-			b = pathToTravel[pathToTravel.Count - 1].Position;
-			c = b; 
+			b = location.Position;
+			c = b;
+			Grid.IncreaseVisibility(location, visionRange);
+
 			for (; t < 1f; t += Time.deltaTime * travelSpeed)
 			{
 				transform.localPosition = Bezier.GetPoint(a, b, c, t);

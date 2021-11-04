@@ -319,6 +319,16 @@ namespace TheZooMustGrow
             }
         }
 
+        int visibility;
+        public bool IsVisible 
+        {
+            get
+            {
+                return visibility > 0;
+            }
+        }
+
+
         // Helps create a linked list for the priority queue
         public HexCell NextWithSamePriority { get; set; }
 
@@ -576,6 +586,24 @@ namespace TheZooMustGrow
             Image highlight = uiRect.GetChild(0).GetComponent<Image>();
             highlight.color = color;
             highlight.enabled = true;
+        }
+
+        public void IncreaseVisibility()
+        {
+            visibility += 1;
+            if (visibility == 1)
+            {
+                ShaderData.RefreshVisibility(this);
+            }
+        }
+
+        public void DecreaseVisibility()
+        {
+            visibility -= 1;
+            if (visibility == 0)
+            {
+                ShaderData.RefreshVisibility(this);
+            }
         }
 
         public void Save(BinaryWriter writer)
