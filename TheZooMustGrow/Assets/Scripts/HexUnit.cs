@@ -121,7 +121,7 @@ namespace TheZooMustGrow
 			{
 				currentTravelLocation = pathToTravel[i];
 				a = c;
-				c = (b + currentTravelLocation.Position) * 0.5f;
+				b = pathToTravel[i - 1].Position;
 				c = (b + pathToTravel[i].Position) * 0.5f;
 
 				Grid.IncreaseVisibility(pathToTravel[i], visionRange);
