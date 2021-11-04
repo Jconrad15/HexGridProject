@@ -191,6 +191,9 @@ namespace TheZooMustGrow
             Vector3 c2 = center + HexMetrics.GetSecondWaterCorner(direction);
 
             water.AddTriangle(center, c1, c2);
+            Vector3 indices;
+            indices.x = indices.y = indices.z = cell.Index;
+            water.AddTriangleCellData(indices, weights1);
 
             // Connect adjacent water cells
             if (direction <= HexDirection.SE && neighbor != null)
@@ -200,6 +203,8 @@ namespace TheZooMustGrow
                 Vector3 e2 = c2 + bridge;
 
                 water.AddQuad(c1, c2, e1, e2);
+                indices.y = neighbor.Index;
+                water.AddQuadCellData(indices, weights1, weights2);
 
                 // Add a triangle to fill gaps between 3 hexagons
                 if (direction <= HexDirection.E)
@@ -210,8 +215,11 @@ namespace TheZooMustGrow
                         return;
                     }
                     water.AddTriangle(
-                        c2, e2, c2 + HexMetrics.GetWaterBridge(direction.Next())
-                    );
+                        c2, e2, c2 + HexMetrics.GetWaterBridge(direction.Next()));
+
+                    indices.z = nextNeighbor.Index;
+                    water.AddTriangleCellData(
+                        indices, weights1, weights2, weights3);
                 }
             }
         }
@@ -228,6 +236,15 @@ namespace TheZooMustGrow
             water.AddTriangle(center, e1.v3, e1.v4);
             water.AddTriangle(center, e1.v4, e1.v5);
 
+            Vector3 indices;
+            indices.x = indices.z = cell.Index;
+            indices.y = neighbor.Index;
+
+            water.AddTriangleCellData(indices, weights1);
+            water.AddTriangleCellData(indices, weights1);
+            water.AddTriangleCellData(indices, weights1);
+            water.AddTriangleCellData(indices, weights1);
+
             // Create edge bridge off of the triangles for the shore
             Vector3 center2 = neighbor.Position;
             center2.y = center.y;
@@ -239,7 +256,7 @@ namespace TheZooMustGrow
             // Check for estuary
             if (cell.HasRiverThroughEdge(direction))
             {
-                TriangulateEstuary(e1, e2, cell.IncomingRiver == direction);
+                TriangulateEstuary(e1, e2, cell.IncomingRiver == direction, indices);
             }
             else
             {
@@ -253,6 +270,11 @@ namespace TheZooMustGrow
                 waterShore.AddQuadUV(0f, 0f, 0f, 1f);
                 waterShore.AddQuadUV(0f, 0f, 0f, 1f);
                 waterShore.AddQuadUV(0f, 0f, 0f, 1f);
+
+                waterShore.AddQuadCellData(indices, weights1, weights2);
+                waterShore.AddQuadCellData(indices, weights1, weights2);
+                waterShore.AddQuadCellData(indices, weights1, weights2);
+                waterShore.AddQuadCellData(indices, weights1, weights2);
             }
             // Add corner triangles to fill gaps between 3 hex cells
             HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
@@ -268,13 +290,16 @@ namespace TheZooMustGrow
                 waterShore.AddTriangleUV(
                     new Vector2(0f, 0f),
                     new Vector2(0f, 1f),
-                    new Vector2(0f, nextNeighbor.IsUnderwater ? 0f : 1f)
-                );
+                    new Vector2(0f, nextNeighbor.IsUnderwater ? 0f : 1f));
+
+                indices.z = nextNeighbor.Index;
+                waterShore.AddTriangleCellData(
+                    indices, weights1, weights2, weights3);
             }
         }
 
         void TriangulateEstuary(
-            EdgeVertices e1, EdgeVertices e2, bool incomingRiver)
+            EdgeVertices e1, EdgeVertices e2, bool incomingRiver, Vector3 indices)
         {
             waterShore.AddTriangle(e2.v1, e1.v2, e1.v1);
             waterShore.AddTriangle(e2.v5, e1.v5, e1.v4);
@@ -284,6 +309,9 @@ namespace TheZooMustGrow
             waterShore.AddTriangleUV(
                 new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(0f, 0f)
             );
+
+            waterShore.AddTriangleCellData(indices, weights2, weights1, weights1);
+            waterShore.AddTriangleCellData(indices, weights2, weights1, weights1);
 
             // Fill in estuary gap
             estuaries.AddQuad(e2.v1, e1.v2, e2.v2, e1.v3);
@@ -301,6 +329,10 @@ namespace TheZooMustGrow
                 new Vector2(0f, 0f), new Vector2(0f, 0f),
                 new Vector2(1f, 1f), new Vector2(0f, 1f)
             );
+
+            estuaries.AddQuadCellData(indices, weights2, weights1, weights2, weights1);
+            estuaries.AddTriangleCellData(indices, weights1, weights2, weights2);
+            estuaries.AddQuadCellData(indices, weights1, weights2);
 
             // Check if the estuary is flowing towards the open water or the river
             if (incomingRiver)
