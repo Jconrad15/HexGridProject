@@ -27,7 +27,7 @@ namespace TheZooMustGrow
 
         public int seed;
 
-        //public Color[] colors;
+        HexCellShaderData cellShaderData;
 
         HexCellPriorityQueue searchFrontier;
         int searchFrontierPhase;
@@ -49,9 +49,8 @@ namespace TheZooMustGrow
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
-            //HexMetrics.colors = colors;
             HexUnit.unitPrefab = unitPrefab;
-
+            cellShaderData = gameObject.AddComponent<HexCellShaderData>();
             CreateMap(cellCountX, cellCountZ);
         }
 
@@ -81,6 +80,9 @@ namespace TheZooMustGrow
 
             chunkCountX = cellCountX / HexMetrics.chunkSizeX;
             chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
+
+            // Initialize the shader data for this hexGrid
+            cellShaderData.Initialize(cellCountX, cellCountZ);
 
             CreateChunks();
             CreateCells();
@@ -136,6 +138,9 @@ namespace TheZooMustGrow
             HexCell cell = cells[i] = Instantiate(cellPrefab);
             cell.transform.localPosition = position;
             cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+            cell.Index = i;
+            // Assign shader data component
+            cell.ShaderData = cellShaderData;
 
             // Set neighboring HexCells
             // East/west neighbors

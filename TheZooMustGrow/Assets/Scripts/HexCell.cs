@@ -188,7 +188,7 @@ namespace TheZooMustGrow
                 if (terrainTypeIndex != value)
                 {
                     terrainTypeIndex = value;
-                    Refresh();
+                    ShaderData.RefreshTerrain(this);
                 }
             }
         }
@@ -328,6 +328,10 @@ namespace TheZooMustGrow
         public int SearchPhase { get; set; }
 
         public HexUnit Unit { get; set; }
+
+        public HexCellShaderData ShaderData { get; set; }
+
+        public int Index { get; set; }
 
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
@@ -621,6 +625,7 @@ namespace TheZooMustGrow
         public void Load(BinaryReader reader)
         {
             terrainTypeIndex = reader.ReadByte();
+            ShaderData.RefreshTerrain(this);
             elevation = reader.ReadByte();
             RefreshPosition();
             waterLevel = reader.ReadByte();
