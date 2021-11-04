@@ -371,7 +371,7 @@ namespace TheZooMustGrow
 
         void TriangulateWaterfallInWater(
             Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4,
-            float y1, float y2, float waterY)
+            float y1, float y2, float waterY, Vector3 indices)
         {
             v1.y = v2.y = y1;
             v3.y = v4.y = y2;
@@ -387,6 +387,7 @@ namespace TheZooMustGrow
 
             rivers.AddQuadUnperturbed(v1, v2, v3, v4);
             rivers.AddQuadUV(0f, 1f, 0.8f, 1f);
+            rivers.AddQuadCellData(indices, weights1, weights2);
         }
 
         void TriangulateWithoutRiver(
@@ -473,9 +474,13 @@ namespace TheZooMustGrow
             {
                 // Add river quads for river mesh
                 bool reversed = cell.HasIncomingRiver;
+
+                Vector3 indices;
+                indices.x = indices.y = indices.z = cell.Index;
+                
                 TriangulateRiverQuad(
-                    m.v2, m.v4, e.v2, e.v4, cell.RiverSurfaceY, 0.6f, reversed
-                );
+                    m.v2, m.v4, e.v2, e.v4, 
+                    cell.RiverSurfaceY, 0.6f, reversed, indices);
 
                 center.y = m.v2.y = m.v4.y = cell.RiverSurfaceY;
                 rivers.AddTriangle(center, m.v2, m.v4);
@@ -491,6 +496,8 @@ namespace TheZooMustGrow
                         new Vector2(0.5f, 0.4f), new Vector2(0f, 0.6f), new Vector2(1f, 0.6f)
                     );
                 }
+
+                rivers.AddTriangleCellData(indices, weights1);
             }
         }
 
@@ -569,8 +576,13 @@ namespace TheZooMustGrow
             {
                 // Add river quads for the river mesh
                 bool reversed = cell.IncomingRiver == direction;
-                TriangulateRiverQuad(centerL, centerR, m.v2, m.v4, cell.RiverSurfaceY, 0.4f, reversed);
-                TriangulateRiverQuad(m.v2, m.v4, e.v2, e.v4, cell.RiverSurfaceY, 0.6f, reversed);
+                TriangulateRiverQuad(
+                    centerL, centerR, m.v2, m.v4,
+                    cell.RiverSurfaceY, 0.4f, reversed, indices);
+
+                TriangulateRiverQuad(
+                    m.v2, m.v4, e.v2, e.v4,
+                    cell.RiverSurfaceY, 0.6f, reversed, indices);
             }
         }
 
@@ -585,9 +597,9 @@ namespace TheZooMustGrow
         /// <param name="reversed"></param>
         void TriangulateRiverQuad(
             Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4,
-            float y, float v, bool reversed)
+            float y, float v, bool reversed, Vector3 indices)
         {
-            TriangulateRiverQuad(v1, v2, v3, v4, y, y, v, reversed);
+            TriangulateRiverQuad(v1, v2, v3, v4, y, y, v, reversed, indices);
         }
 
         /// <summary>
@@ -602,7 +614,7 @@ namespace TheZooMustGrow
         /// <param name="reversed"></param>
         void TriangulateRiverQuad(
             Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4,
-            float y1, float y2, float v, bool reversed)
+            float y1, float y2, float v, bool reversed, Vector3 indices)
         {
             // The U coordinate is 0 at the left of the river and
             // 1 at the right, when looking downstream.
@@ -620,6 +632,7 @@ namespace TheZooMustGrow
             {
                 rivers.AddQuadUV(0f, 1f, v, v + 0.2f);
             }
+            rivers.AddQuadCellData(indices, weights1, weights2);
         }
 
         void TriangulateEdgeFan(Vector3 center, EdgeVertices edge, float index)
@@ -688,6 +701,11 @@ namespace TheZooMustGrow
             if (hasRiver)
             {
                 e2.v3.y = neighbor.StreamBedY;
+
+                Vector3 indices;
+                indices.x = indices.z = cell.Index;
+                indices.y = neighbor.Index;
+
                 // Check if the river will be in an under water cell
                 if (!cell.IsUnderwater)
                 {
@@ -698,7 +716,8 @@ namespace TheZooMustGrow
                         TriangulateRiverQuad(
                             e1.v2, e1.v4, e2.v2, e2.v4,
                             cell.RiverSurfaceY, neighbor.RiverSurfaceY, 0.8f,
-                            cell.HasIncomingRiver && cell.IncomingRiver == direction);
+                            cell.HasIncomingRiver && cell.IncomingRiver == direction,
+                            indices);
                     }
                     else if (cell.Elevation > neighbor.WaterLevel)
                     {
@@ -706,7 +725,7 @@ namespace TheZooMustGrow
                         TriangulateWaterfallInWater(
                             e1.v2, e1.v4, e2.v2, e2.v4,
                             cell.RiverSurfaceY, neighbor.RiverSurfaceY,
-                            neighbor.WaterSurfaceY);
+                            neighbor.WaterSurfaceY, indices);
                     }
                 }
                 else if (!neighbor.IsUnderwater &&
@@ -715,8 +734,7 @@ namespace TheZooMustGrow
                     TriangulateWaterfallInWater(
                         e2.v4, e2.v2, e1.v4, e1.v2,
                         neighbor.RiverSurfaceY, cell.RiverSurfaceY,
-                        cell.WaterSurfaceY
-                    );
+                        cell.WaterSurfaceY, indices);
                 }
             }
 
