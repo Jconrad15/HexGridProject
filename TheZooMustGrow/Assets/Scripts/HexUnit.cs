@@ -13,7 +13,15 @@ namespace TheZooMustGrow
 
 		const float travelSpeed = 4f;
 		const float rotationSpeed = 180f;
-		const int visionRange = 3;
+		
+		
+		public int VisionRange
+        {
+            get 
+			{ 
+				return 3; 
+			}
+        }
 
 		public HexGrid Grid { get; set; }
 
@@ -31,13 +39,13 @@ namespace TheZooMustGrow
 				if (location)
                 {
 					// Decrease visibility when leaving a cell
-					Grid.DecreaseVisibility(location, visionRange);
+					Grid.DecreaseVisibility(location, VisionRange);
 					location.Unit = null;
                 }
 
 				location = value;
 				value.Unit = this;
-				Grid.IncreaseVisibility(value, visionRange);
+				Grid.IncreaseVisibility(value, VisionRange);
 				transform.localPosition = value.Position;
 			}
 		}
@@ -73,8 +81,8 @@ namespace TheZooMustGrow
 				transform.localPosition = location.Position;
 				if (currentTravelLocation)
 				{
-					Grid.IncreaseVisibility(location, visionRange);
-					Grid.DecreaseVisibility(currentTravelLocation, visionRange);
+					Grid.IncreaseVisibility(location, VisionRange);
+					Grid.DecreaseVisibility(currentTravelLocation, VisionRange);
 					currentTravelLocation = null;
 				}
 			}
@@ -95,7 +103,7 @@ namespace TheZooMustGrow
         {
 			if (location)
             {
-				Grid.DecreaseVisibility(location, visionRange);
+				Grid.DecreaseVisibility(location, VisionRange);
             }
 			Location.Unit = null;
 			Destroy(gameObject);
@@ -121,7 +129,7 @@ namespace TheZooMustGrow
 			yield return LookAt(pathToTravel[1].Position);
 			Grid.DecreaseVisibility(
 				currentTravelLocation ? currentTravelLocation : pathToTravel[0],
-				visionRange);
+				VisionRange);
 
 			float t = Time.deltaTime * travelSpeed;
 			for (int i = 1; i < pathToTravel.Count; i++)
@@ -131,7 +139,7 @@ namespace TheZooMustGrow
 				b = pathToTravel[i - 1].Position;
 				c = (b + pathToTravel[i].Position) * 0.5f;
 
-				Grid.IncreaseVisibility(pathToTravel[i], visionRange);
+				Grid.IncreaseVisibility(pathToTravel[i], VisionRange);
 
 				for (; t < 1f; t += Time.deltaTime * travelSpeed)
 				{
@@ -143,7 +151,7 @@ namespace TheZooMustGrow
 
 					yield return null;
 				}
-				Grid.DecreaseVisibility(pathToTravel[i], visionRange);
+				Grid.DecreaseVisibility(pathToTravel[i], VisionRange);
 				t -= 1f;
 			}
 			currentTravelLocation = null;
@@ -152,7 +160,7 @@ namespace TheZooMustGrow
 			a = c;
 			b = location.Position;
 			c = b;
-			Grid.IncreaseVisibility(location, visionRange);
+			Grid.IncreaseVisibility(location, VisionRange);
 
 			for (; t < 1f; t += Time.deltaTime * travelSpeed)
 			{

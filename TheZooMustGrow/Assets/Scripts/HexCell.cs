@@ -116,7 +116,14 @@ namespace TheZooMustGrow
             set
             {
                 if (waterLevel == value) { return; }
+
+                int originalViewElevation = ViewElevation;
                 waterLevel = value;
+                if (ViewElevation != originalViewElevation)
+                {
+                    ShaderData.ViewElevationChanged();
+                }
+
                 ValidateRivers();
                 Refresh();
             }
@@ -155,7 +162,12 @@ namespace TheZooMustGrow
                 // Return if not changed
                 if (elevation == value) { return; }
 
+                int originalViewElevation = ViewElevation;
                 elevation = value;
+                if (ViewElevation != originalViewElevation)
+                {
+                    ShaderData.ViewElevationChanged();
+                }
 
                 RefreshPosition();
 
@@ -176,6 +188,16 @@ namespace TheZooMustGrow
         }
         private int elevation = int.MinValue;
 
+        public int ViewElevation
+        {
+            get
+            {
+                return elevation >= waterLevel ? elevation : waterLevel;
+            }
+        }
+
+
+
         private int terrainTypeIndex;
         public int TerrainTypeIndex
         {
@@ -192,12 +214,6 @@ namespace TheZooMustGrow
                 }
             }
         }
-
-/*        private Color color;
-        public Color Color
-        {
-            get { return HexMetrics.colors[terrainTypeIndex]; }
-        }*/
 
         // Features
         private int urbanLevel;
@@ -605,6 +621,15 @@ namespace TheZooMustGrow
             visibility -= 1;
             if (visibility == 0)
             {
+                ShaderData.RefreshVisibility(this);
+            }
+        }
+
+        public void ResetVisibility()
+        {
+            if (visibility > 0)
+            {
+                visibility = 0;
                 ShaderData.RefreshVisibility(this);
             }
         }

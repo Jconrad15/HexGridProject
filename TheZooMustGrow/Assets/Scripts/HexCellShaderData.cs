@@ -13,6 +13,10 @@ namespace TheZooMustGrow
 
 		public bool ImmediateMode { get; set; }
 
+		bool needsVisibilityReset;
+
+		public HexGrid Grid { get; set; }
+
 		public void Initialize(int x, int z)
 		{
 			// Check if a texture already exists
@@ -64,6 +68,12 @@ namespace TheZooMustGrow
 
         private void LateUpdate()
         {
+			if (needsVisibilityReset)
+            {
+				needsVisibilityReset = false;
+				Grid.ResetVisibility();
+            }
+
 			int delta = (int)(Time.deltaTime * transitionSpeed);
 			// Force delta to be at least 1
 			if (delta == 0) { delta = 1; }
@@ -141,6 +151,12 @@ namespace TheZooMustGrow
 				cellTextureData[index].b = 255;
 				transitioningCells.Add(cell);
 			}
+			enabled = true;
+        }
+
+		public void ViewElevationChanged()
+        {
+			needsVisibilityReset = true;
 			enabled = true;
         }
 

@@ -51,6 +51,7 @@ namespace TheZooMustGrow
             HexMetrics.InitializeHashGrid(seed);
             HexUnit.unitPrefab = unitPrefab;
             cellShaderData = gameObject.AddComponent<HexCellShaderData>();
+            cellShaderData.Grid = this;
             CreateMap(cellCountX, cellCountZ);
         }
 
@@ -123,7 +124,7 @@ namespace TheZooMustGrow
                 HexMetrics.noiseSource = noiseSource;
                 HexMetrics.InitializeHashGrid(seed);
                 HexUnit.unitPrefab = unitPrefab;
-                //HexMetrics.colors = colors;
+                ResetVisibility();
             }
         }
 
@@ -435,9 +436,11 @@ namespace TheZooMustGrow
                 searchFrontier.Clear();
             }
 
+            range += fromCell.ViewElevation;
             fromCell.SearchPhase = searchFrontierPhase;
             fromCell.Distance = 0;
             searchFrontier.Enqueue(fromCell);
+            HexCoordinates fromCoordinates = fromCell.coordinates;
             while (searchFrontier.Count > 0)
             {
                 HexCell current = searchFrontier.Dequeue();
@@ -456,7 +459,8 @@ namespace TheZooMustGrow
                     }
 
                     int distance = current.Distance + 1;
-                    if (distance > range)
+                    if (distance + neighbor.ViewElevation > range ||
+                        distance > fromCoordinates.DistanceTo(neighbor.coordinates))
                     {
                         continue;
                     }
@@ -499,6 +503,20 @@ namespace TheZooMustGrow
             ListPool<HexCell>.Add(cells);
         }
 
+        public void ResetVisibility()
+        {
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cells[i].ResetVisibility();
+            }
+
+            // Update the vision of each unit
+            for (int i = 0; i < units.Count; i++)
+            {
+                HexUnit unit = units[i];
+                IncreaseVisibility(unit.Location, unit.VisionRange);
+            }
+        }
 
         public void Save(BinaryWriter writer)
         {
