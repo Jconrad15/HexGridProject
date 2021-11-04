@@ -340,10 +340,11 @@ namespace TheZooMustGrow
         {
             get
             {
-                return visibility > 0;
+                return visibility > 0 && Explorable;
             }
         }
 
+        public bool Explorable { get; set; }
 
         // Helps create a linked list for the priority queue
         public HexCell NextWithSamePriority { get; set; }
@@ -359,7 +360,18 @@ namespace TheZooMustGrow
 
         public int Index { get; set; }
 
-        public bool IsExplored { get; private set; }
+        private bool explored;
+        public bool IsExplored 
+        {
+            get
+            {
+                return explored && Explorable;
+            } 
+            private set
+            {
+                explored = value;
+            }
+        }
 
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.

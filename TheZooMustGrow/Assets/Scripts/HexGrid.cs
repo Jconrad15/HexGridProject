@@ -143,6 +143,9 @@ namespace TheZooMustGrow
             // Assign shader data component
             cell.ShaderData = cellShaderData;
 
+            cell.Explorable =
+                x > 0 && z > 0 && x < cellCountX - 1 && z < cellCountZ - 1;
+
             // Set neighboring HexCells
             // East/west neighbors
             if (x > 0)
@@ -452,8 +455,8 @@ namespace TheZooMustGrow
                     HexCell neighbor = current.GetNeighbor(d);
                     if (
                         neighbor == null ||
-                        neighbor.SearchPhase > searchFrontierPhase
-                    )
+                        neighbor.SearchPhase > searchFrontierPhase ||
+                        !neighbor.Explorable)
                     {
                         continue;
                     }
