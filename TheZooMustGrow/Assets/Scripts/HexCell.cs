@@ -652,7 +652,7 @@ namespace TheZooMustGrow
             // They stay inside the 0–255 range each.
             // This means that only the first byte of each integer will be used.
             writer.Write((byte)terrainTypeIndex);
-            writer.Write((byte)elevation);
+            writer.Write((byte)(elevation + 127));
             writer.Write((byte)waterLevel);
             writer.Write((byte)urbanLevel);
             writer.Write((byte)farmLevel);
@@ -696,6 +696,11 @@ namespace TheZooMustGrow
             terrainTypeIndex = reader.ReadByte();
             ShaderData.RefreshTerrain(this);
             elevation = reader.ReadByte();
+            if (header >= 4)
+            {
+                elevation -= 127;
+            }
+
             RefreshPosition();
             waterLevel = reader.ReadByte();
             urbanLevel = reader.ReadByte();

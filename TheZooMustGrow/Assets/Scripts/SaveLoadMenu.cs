@@ -18,7 +18,7 @@ namespace TheZooMustGrow
 		public RectTransform listContent;
 		public SaveLoadItem itemPrefab;
 
-		const int mapFileVersion = 3;
+		const int mapFileVersion = 4;
 
 		public void Open(bool saveMode)
 		{
@@ -85,7 +85,35 @@ namespace TheZooMustGrow
 			return Path.Combine(Application.persistentDataPath, mapName + ".map");
 		}
 
-        private void Save(string path)
+		public void SelectItem(string name)
+		{
+			nameInput.text = name;
+		}
+
+		private void FillList()
+		{
+			// Remove old items
+			for (int i = 0; i < listContent.childCount; i++)
+			{
+				Destroy(listContent.GetChild(i).gameObject);
+			}
+
+			string[] paths = Directory.GetFiles(Application.persistentDataPath, "*.map");
+
+			// Sort to alphabetical order
+			Array.Sort(paths);
+
+			// Create item prefabs for each saved map
+			for (int i = 0; i < paths.Length; i++)
+			{
+				SaveLoadItem item = Instantiate(itemPrefab);
+				item.menu = this;
+				item.MapName = Path.GetFileNameWithoutExtension(paths[i]);
+				item.transform.SetParent(listContent, false);
+			}
+		}
+
+		private void Save(string path)
         {
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
             {
@@ -119,35 +147,6 @@ namespace TheZooMustGrow
             }
         }
 
-		public void SelectItem(string name)
-        {
-			nameInput.text = name;
-        }
-
-		private void FillList()
-		{
-			// Remove old items
-			for (int i = 0; i < listContent.childCount; i++)
-			{
-				Destroy(listContent.GetChild(i).gameObject);
-			}
-
-			string[] paths = Directory.GetFiles(Application.persistentDataPath, "*.map");
-
-			// Sort to alphabetical order
-			Array.Sort(paths);
-
-			// Create item prefabs for each saved map
-			for (int i = 0; i < paths.Length; i++)
-			{
-				SaveLoadItem item = Instantiate(itemPrefab);
-				item.menu = this;
-				item.MapName = Path.GetFileNameWithoutExtension(paths[i]);
-				item.transform.SetParent(listContent, false);
-			}
-
-
-		}
 
 	}
 }

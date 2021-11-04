@@ -2743,8 +2743,8 @@ MonoBehaviour:
   m_FillRect: {fileID: 1321384032}
   m_HandleRect: {fileID: 1376677263}
   m_Direction: 0
-  m_MinValue: 0
-  m_MaxValue: 6
+  m_MinValue: -4
+  m_MaxValue: 10
   m_WholeNumbers: 1
   m_Value: 0
   m_OnValueChanged:
@@ -6348,6 +6348,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 585186749}
+  jitterProbability: 0.25
+  chunkSizeMin: 30
+  chunkSizeMax: 100
+  landPercentage: 50
+  waterLevel: 3
+  highRiseProbability: 0.25
+  sinkProbability: 0.2
+  elevationMinimum: -2
+  elevationMaximum: 8
 --- !u!4 &634816968
 Transform:
   m_ObjectHideFlags: 0
