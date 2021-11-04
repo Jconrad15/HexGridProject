@@ -217,6 +217,7 @@ namespace TheZooMustGrow
         public void AddTriangleCellData(
             Vector3 indices, Color weights1, Color weights2, Color weights3)
         {
+            if (cellIndices == null) { Debug.LogError("cellIndices is null."); }
             cellIndices.Add(indices);
             cellIndices.Add(indices);
             cellIndices.Add(indices);
@@ -234,6 +235,7 @@ namespace TheZooMustGrow
             Vector3 indices,
             Color weights1, Color weights2, Color weights3, Color weights4)
         {
+            if (cellIndices == null) { Debug.LogError("cellIndices is null."); }
             cellIndices.Add(indices);
             cellIndices.Add(indices);
             cellIndices.Add(indices);
