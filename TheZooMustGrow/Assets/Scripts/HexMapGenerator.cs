@@ -11,8 +11,9 @@ namespace TheZooMustGrow
 		public int seed;
 		public bool useFixedSeed;
 
-		HexCellPriorityQueue searchFrontier;
-		int searchFrontierPhase;
+		private HexCellPriorityQueue searchFrontier;
+		private int searchFrontierPhase;
+		private int xMin, xMax, zMin, zMax;
 
 		[Range(0f, 0.5f)]
 		public float jitterProbability = 0.25f;
@@ -40,6 +41,12 @@ namespace TheZooMustGrow
 
 		[Range(6, 10)]
 		public int elevationMaximum = 8;
+
+		[Range(0, 10)]
+		public int mapBorderX = 5;
+
+		[Range(0, 10)]
+		public int mapBorderZ = 5;
 
 		public void GenerateMap(int x, int z)
 		{
@@ -71,6 +78,12 @@ namespace TheZooMustGrow
 				grid.GetCell(i).WaterLevel = waterLevel;
             }
 
+			// Set land bound constraints
+			xMin = mapBorderX;
+			xMax = x - mapBorderX;
+			zMin = mapBorderZ;
+			zMax = z - mapBorderZ;
+
 			CreateLand();
 			SetTerrainType();
 
@@ -87,7 +100,7 @@ namespace TheZooMustGrow
         {
             int landBudget = Mathf.RoundToInt(cellCount * landPercentage * 0.01f);
 
-			while (landBudget > 0)
+			for (int guard = 0; landBudget > 0 && guard < 10000; guard++)
 			{
 				int chunkSize = Random.Range(chunkSizeMin, chunkSizeMax + 1);
 
@@ -101,6 +114,13 @@ namespace TheZooMustGrow
 					landBudget = RaiseTerrain(chunkSize, landBudget);
 				}
 			}
+
+			// Check if the landbudget was used,
+			// or the map creation timed out using the guard
+			if (landBudget > 0)
+            {
+				Debug.LogWarning("Failed to use up " + landBudget + "land budget.");
+            }
         }
 
 		private int RaiseTerrain(int chunkSize, int budget)
@@ -157,7 +177,6 @@ namespace TheZooMustGrow
 			return budget;
         }
 
-
 		private int SinkTerrain(int chunkSize, int budget)
 		{
 			// Start search for random group of terrain
@@ -211,7 +230,6 @@ namespace TheZooMustGrow
 			return budget;
 		}
 
-
 		private void SetTerrainType()
         {
 			for (int i = 0; i < cellCount; i++)
@@ -226,8 +244,10 @@ namespace TheZooMustGrow
 
 		private HexCell GetRandomCell()
         {
-			return grid.GetCell(Random.Range(0, cellCount));
-        }
+			return grid.GetCell(
+				Random.Range(xMin, xMax),
+				Random.Range(zMin, zMax));
+		}
 
 	}
 }
