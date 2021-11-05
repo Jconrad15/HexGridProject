@@ -81,6 +81,10 @@ namespace TheZooMustGrow
 		[Range(0f, 1f)]
 		public float seepageFactor = 0.125f;
 
+		public HexDirection windDirection = HexDirection.NW;
+		[Range(1f, 10f)]
+		public float windStrength = 4f;
+
 		public void GenerateMap(int x, int z)
 		{
 			Random.State originalRandomState = Random.state;
@@ -527,8 +531,18 @@ namespace TheZooMustGrow
 			cellClimate.clouds -= precipitation;
 			cellClimate.moisture += precipitation;
 
+			float cloudMaximum = 1f - cell.ViewElevation / (elevationMaximum + 1f);
+			// If there is more clouds than allowed, precipitate
+			if (cellClimate.clouds > cloudMaximum)
+			{
+				cellClimate.moisture += cellClimate.clouds - cloudMaximum;
+				cellClimate.clouds = cloudMaximum;
+			}
+
+
 			// Disperse clouds and moisture
-			float cloudDispersal = cellClimate.clouds * (1f / 6f);
+			HexDirection mainDispersalDirection = windDirection.Opposite();
+			float cloudDispersal = cellClimate.clouds * (1f / (5f + windStrength));
 			float runoff = cellClimate.moisture * runoffFactor * (1f / 6f);
 			float seepage = cellClimate.moisture * seepageFactor * (1f / 6f);
 			for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
@@ -542,8 +556,14 @@ namespace TheZooMustGrow
 				ClimateData neighborClimate = climate[neighbor.Index];
 
 				// Disperse clouds
-				neighborClimate.clouds += cloudDispersal;
-
+				if (d == mainDispersalDirection)
+				{
+					neighborClimate.clouds += cloudDispersal * windStrength;
+				}
+				else
+				{
+					neighborClimate.clouds += cloudDispersal;
+				}
 				//Disperse moisture
 				int elevationDelta = neighbor.ViewElevation - cell.ViewElevation;
 				// If neighbor is lower, then runoff
