@@ -24,6 +24,7 @@ namespace TheZooMustGrow
 		struct ClimateData
         {
 			public float clouds;
+			public float moisture;
         }
 
 		[Range(0f, 0.5f)]
@@ -69,10 +70,16 @@ namespace TheZooMustGrow
 		public int erosionPercentage = 50;
 
 		[Range(0f, 1f)]
-		public float evaporation = 0.5f;
+		public float evaporationFactor = 0.5f;
 
 		[Range(0f, 1f)]
 		public float precipitationFactor = 0.25f;
+
+		[Range(0f, 1f)]
+		public float runoffFactor = 0.25f;
+
+		[Range(0f, 1f)]
+		public float seepageFactor = 0.125f;
 
 		public void GenerateMap(int x, int z)
 		{
@@ -279,7 +286,7 @@ namespace TheZooMustGrow
 					cell.TerrainTypeIndex = cell.Elevation - cell.WaterLevel;
 				}
 				// Set shader data
-				cell.SetMapData(climate[i].clouds);
+				cell.SetMapData(climate[i].moisture);
 			}
         }
 
@@ -502,18 +509,28 @@ namespace TheZooMustGrow
 			HexCell cell = grid.GetCell(cellIndex);
 			ClimateData cellClimate = climate[cellIndex];
 
-			// Evaporate water
+			// Evaporate water from moisture to clouds
 			if (cell.IsUnderwater)
             {
-				cellClimate.clouds += evaporation;
+				cellClimate.moisture = 1f;
+				cellClimate.clouds += evaporationFactor;
             }
+            else
+            {
+				float evaporation = cellClimate.moisture * evaporationFactor;
+				cellClimate.moisture -= evaporation;
+				cellClimate.clouds += evaporation;
+			}
 
-			// Precipitate water
+			// Precipitate water from clouds to moisture
 			float precipitation = cellClimate.clouds * precipitationFactor;
 			cellClimate.clouds -= precipitation;
+			cellClimate.moisture += precipitation;
 
-			// Disperse clouds
+			// Disperse clouds and moisture
 			float cloudDispersal = cellClimate.clouds * (1f / 6f);
+			float runoff = cellClimate.moisture * runoffFactor * (1f / 6f);
+			float seepage = cellClimate.moisture * seepageFactor * (1f / 6f);
 			for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
 			{
 				HexCell neighbor = cell.GetNeighbor(d);
@@ -521,8 +538,27 @@ namespace TheZooMustGrow
 				{
 					continue;
 				}
+				
 				ClimateData neighborClimate = climate[neighbor.Index];
+
+				// Disperse clouds
 				neighborClimate.clouds += cloudDispersal;
+
+				//Disperse moisture
+				int elevationDelta = neighbor.ViewElevation - cell.ViewElevation;
+				// If neighbor is lower, then runoff
+				if (elevationDelta < 0)
+                {
+					cellClimate.moisture -= runoff;
+					neighborClimate.moisture += runoff;
+                }
+				// If neighbor is the same elevation, then seepage
+				else if (elevationDelta == 0)
+                {
+					cellClimate.moisture -= seepage;
+					neighborClimate.moisture += seepage;
+                }
+
 				climate[neighbor.Index] = neighborClimate;
 			}
 			// Current cells clouds have left, set to zero
