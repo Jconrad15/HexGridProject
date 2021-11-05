@@ -20,6 +20,12 @@ namespace TheZooMustGrow
 			public int xMin, xMax, zMin, zMax;
 		}
 
+		private List<ClimateData> climate = new List<ClimateData>();
+		struct ClimateData
+        {
+			public float clouds;
+        }
+
 		[Range(0f, 0.5f)]
 		public float jitterProbability = 0.25f;
 
@@ -62,6 +68,12 @@ namespace TheZooMustGrow
 		[Range(0, 100)]
 		public int erosionPercentage = 50;
 
+		[Range(0f, 1f)]
+		public float evaporation = 0.5f;
+
+		[Range(0f, 1f)]
+		public float precipitationFactor = 0.25f;
+
 		public void GenerateMap(int x, int z)
 		{
 			Random.State originalRandomState = Random.state;
@@ -97,6 +109,7 @@ namespace TheZooMustGrow
 
 			CreateLand();
 			ErodeLand();
+			CreateClimate();
 			SetTerrainType();
 
             // Set all search phase variables in cells to zero
@@ -265,6 +278,8 @@ namespace TheZooMustGrow
 				{
 					cell.TerrainTypeIndex = cell.Elevation - cell.WaterLevel;
 				}
+				// Set shader data
+				cell.SetMapData(climate[i].clouds);
 			}
         }
 
@@ -463,6 +478,58 @@ namespace TheZooMustGrow
 
 			return target;
 		}
+
+		private void CreateClimate()
+        {
+			climate.Clear();
+			ClimateData initialData = new ClimateData();
+            for (int i = 0; i < cellCount; i++)
+            {
+				climate.Add(initialData);
+            }
+
+			for (int cycle = 0; cycle < 40; cycle++)
+			{
+				for (int i = 0; i < cellCount; i++)
+				{
+					EvolveClimate(i);
+				}
+			}
+		}
+
+		private void EvolveClimate(int cellIndex)
+        {
+			HexCell cell = grid.GetCell(cellIndex);
+			ClimateData cellClimate = climate[cellIndex];
+
+			// Evaporate water
+			if (cell.IsUnderwater)
+            {
+				cellClimate.clouds += evaporation;
+            }
+
+			// Precipitate water
+			float precipitation = cellClimate.clouds * precipitationFactor;
+			cellClimate.clouds -= precipitation;
+
+			// Disperse clouds
+			float cloudDispersal = cellClimate.clouds * (1f / 6f);
+			for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+			{
+				HexCell neighbor = cell.GetNeighbor(d);
+				if (!neighbor)
+				{
+					continue;
+				}
+				ClimateData neighborClimate = climate[neighbor.Index];
+				neighborClimate.clouds += cloudDispersal;
+				climate[neighbor.Index] = neighborClimate;
+			}
+			// Current cells clouds have left, set to zero
+			cellClimate.clouds = 0f;
+
+			climate[cellIndex] = cellClimate;
+        }
 
 	}
 }

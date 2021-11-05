@@ -646,6 +646,11 @@ namespace TheZooMustGrow
             }
         }
 
+        public void SetMapData(float data)
+        {
+            ShaderData.SetMapData(this, data);
+        }
+
         public void Save(BinaryWriter writer)
         {
             // The integer values only cover a small value range.
