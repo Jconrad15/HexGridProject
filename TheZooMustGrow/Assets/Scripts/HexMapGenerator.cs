@@ -13,7 +13,12 @@ namespace TheZooMustGrow
 
 		private HexCellPriorityQueue searchFrontier;
 		private int searchFrontierPhase;
-		private int xMin, xMax, zMin, zMax;
+
+		private List<MapRegion> regions;
+		struct MapRegion
+		{
+			public int xMin, xMax, zMin, zMax;
+		}
 
 		[Range(0f, 0.5f)]
 		public float jitterProbability = 0.25f;
@@ -48,6 +53,12 @@ namespace TheZooMustGrow
 		[Range(0, 10)]
 		public int mapBorderZ = 5;
 
+		[Range(0, 10)]
+		public int regionBorder = 5;
+
+		[Range(1, 4)]
+		public int regionCount = 1;
+
 		public void GenerateMap(int x, int z)
 		{
 			Random.State originalRandomState = Random.state;
@@ -79,10 +90,7 @@ namespace TheZooMustGrow
             }
 
 			// Set land bound constraints
-			xMin = mapBorderX;
-			xMax = x - mapBorderX;
-			zMin = mapBorderZ;
-			zMax = z - mapBorderZ;
+			CreateRegions();
 
 			CreateLand();
 			SetTerrainType();
@@ -100,18 +108,32 @@ namespace TheZooMustGrow
         {
             int landBudget = Mathf.RoundToInt(cellCount * landPercentage * 0.01f);
 
-			for (int guard = 0; landBudget > 0 && guard < 10000; guard++)
+			for (int guard = 0; guard < 10000; guard++)
 			{
-				int chunkSize = Random.Range(chunkSizeMin, chunkSizeMax + 1);
+				bool sink = Random.value < sinkProbability;
 
-				// Determine to raise or sink land
-				if (Random.value < sinkProbability)
+				// Loop through regions
+				for (int i = 0; i < regions.Count; i++)
 				{
-					landBudget = SinkTerrain(chunkSize, landBudget);
-				}
-				else
-				{
-					landBudget = RaiseTerrain(chunkSize, landBudget);
+					MapRegion region = regions[i];
+
+					int chunkSize = Random.Range(chunkSizeMin, chunkSizeMax + 1);
+
+					// Determine to raise or sink land
+					if (sink)
+					{
+						landBudget = SinkTerrain(chunkSize, landBudget, region);
+					}
+					else
+					{
+						landBudget = RaiseTerrain(chunkSize, landBudget, region);
+						
+						// Check if landBudget is met
+						if (landBudget == 0)
+                        {
+							return;
+                        }
+					}
 				}
 			}
 
@@ -123,11 +145,11 @@ namespace TheZooMustGrow
             }
         }
 
-		private int RaiseTerrain(int chunkSize, int budget)
+		private int RaiseTerrain(int chunkSize, int budget, MapRegion region)
         {
 			// Start search for random group of terrain
 			searchFrontierPhase += 1;
-			HexCell firstCell = GetRandomCell();
+			HexCell firstCell = GetRandomCell(region);
 			firstCell.SearchPhase = searchFrontierPhase;
 			firstCell.Distance = 0;
 			firstCell.SearchHeuristic = 0;
@@ -177,11 +199,11 @@ namespace TheZooMustGrow
 			return budget;
         }
 
-		private int SinkTerrain(int chunkSize, int budget)
+		private int SinkTerrain(int chunkSize, int budget, MapRegion region)
 		{
 			// Start search for random group of terrain
 			searchFrontierPhase += 1;
-			HexCell firstCell = GetRandomCell();
+			HexCell firstCell = GetRandomCell(region);
 			firstCell.SearchPhase = searchFrontierPhase;
 			firstCell.Distance = 0;
 			firstCell.SearchHeuristic = 0;
@@ -242,11 +264,88 @@ namespace TheZooMustGrow
 			}
         }
 
-		private HexCell GetRandomCell()
+		private HexCell GetRandomCell(MapRegion region)
         {
 			return grid.GetCell(
-				Random.Range(xMin, xMax),
-				Random.Range(zMin, zMax));
+				Random.Range(region.xMin, region.xMax),
+				Random.Range(region.zMin, region.zMax));
+		}
+
+		private void CreateRegions()
+        {
+			if (regions == null)
+            {
+				regions = new List<MapRegion>();
+            }
+            else
+            {
+				regions.Clear();
+            }
+
+			MapRegion region;
+			switch (regionCount)
+			{
+				default:
+					region.xMin = mapBorderX;
+					region.xMax = grid.cellCountX - mapBorderX;
+					region.zMin = mapBorderZ;
+					region.zMax = grid.cellCountZ - mapBorderZ;
+					regions.Add(region);
+					break;
+				case 2:
+					if (Random.value < 0.5f)
+					{
+						region.xMin = mapBorderX;
+						region.xMax = grid.cellCountX / 2 - regionBorder;
+						region.zMin = mapBorderZ;
+						region.zMax = grid.cellCountZ - mapBorderZ;
+						regions.Add(region);
+						region.xMin = grid.cellCountX / 2 + regionBorder;
+						region.xMax = grid.cellCountX - mapBorderX;
+						regions.Add(region);
+					}
+					else
+					{
+						region.xMin = mapBorderX;
+						region.xMax = grid.cellCountX - mapBorderX;
+						region.zMin = mapBorderZ;
+						region.zMax = grid.cellCountZ / 2 - regionBorder;
+						regions.Add(region);
+						region.zMin = grid.cellCountZ / 2 + regionBorder;
+						region.zMax = grid.cellCountZ - mapBorderZ;
+						regions.Add(region);
+					}
+					break;
+				case 3:
+					region.xMin = mapBorderX;
+					region.xMax = grid.cellCountX / 3 - regionBorder;
+					region.zMin = mapBorderZ;
+					region.zMax = grid.cellCountZ - mapBorderZ;
+					regions.Add(region);
+					region.xMin = grid.cellCountX / 3 + regionBorder;
+					region.xMax = grid.cellCountX * 2 / 3 - regionBorder;
+					regions.Add(region);
+					region.xMin = grid.cellCountX * 2 / 3 + regionBorder;
+					region.xMax = grid.cellCountX - mapBorderX;
+					regions.Add(region);
+					break;
+				case 4:
+					region.xMin = mapBorderX;
+					region.xMax = grid.cellCountX / 2 - regionBorder;
+					region.zMin = mapBorderZ;
+					region.zMax = grid.cellCountZ / 2 - regionBorder;
+					regions.Add(region);
+					region.xMin = grid.cellCountX / 2 + regionBorder;
+					region.xMax = grid.cellCountX - mapBorderX;
+					regions.Add(region);
+					region.zMin = grid.cellCountZ / 2 + regionBorder;
+					region.zMax = grid.cellCountZ - mapBorderZ;
+					regions.Add(region);
+					region.xMin = mapBorderX;
+					region.xMax = grid.cellCountX / 2 - regionBorder;
+					regions.Add(region);
+					break;
+			}
 		}
 
 	}

@@ -6349,7 +6349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grid: {fileID: 585186749}
   seed: 0
-  useFixedSeed: 1
+  useFixedSeed: 0
   jitterProbability: 0.25
   chunkSizeMin: 30
   chunkSizeMax: 100
@@ -6359,6 +6359,9 @@ MonoBehaviour:
   sinkProbability: 0.2
   elevationMinimum: -2
   elevationMaximum: 8
+  mapBorderX: 5
+  mapBorderZ: 5
+  regionBorder: 5
 --- !u!4 &634816968
 Transform:
   m_ObjectHideFlags: 0
