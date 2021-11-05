@@ -21,6 +21,8 @@ namespace TheZooMustGrow
 		}
 
 		private List<ClimateData> climate = new List<ClimateData>();
+		private List<ClimateData> nextClimate = new List<ClimateData>();
+
 		struct ClimateData
         {
 			public float clouds;
@@ -68,6 +70,9 @@ namespace TheZooMustGrow
 
 		[Range(0, 100)]
 		public int erosionPercentage = 50;
+
+		[Range(0f, 1f)]
+		public float startingMoisture = 0.1f;
 
 		[Range(0f, 1f)]
 		public float evaporationFactor = 0.5f;
@@ -281,18 +286,41 @@ namespace TheZooMustGrow
 		}
 
 		private void SetTerrainType()
-        {
+		{
 			for (int i = 0; i < cellCount; i++)
 			{
 				HexCell cell = grid.GetCell(i);
+				float moisture = climate[i].moisture;
 				if (!cell.IsUnderwater)
 				{
-					cell.TerrainTypeIndex = cell.Elevation - cell.WaterLevel;
+					if (moisture < 0.05f)
+					{
+						cell.TerrainTypeIndex = 4;
+					}
+					else if (moisture < 0.12f)
+					{
+						cell.TerrainTypeIndex = 0;
+					}
+					else if (moisture < 0.28f)
+					{
+						cell.TerrainTypeIndex = 3;
+					}
+					else if (moisture < 0.85f)
+					{
+						cell.TerrainTypeIndex = 1;
+					}
+					else
+					{
+						cell.TerrainTypeIndex = 2;
+					}
 				}
-				// Set shader data
-				cell.SetMapData(climate[i].moisture);
+				else
+				{
+					cell.TerrainTypeIndex = 2;
+				}
+				cell.SetMapData(moisture);
 			}
-        }
+		}
 
 		private HexCell GetRandomCell(MapRegion region)
         {
@@ -493,10 +521,15 @@ namespace TheZooMustGrow
 		private void CreateClimate()
         {
 			climate.Clear();
+			nextClimate.Clear();
+
 			ClimateData initialData = new ClimateData();
-            for (int i = 0; i < cellCount; i++)
+			initialData.moisture = startingMoisture;
+			ClimateData clearData = new ClimateData();
+			for (int i = 0; i < cellCount; i++)
             {
 				climate.Add(initialData);
+				nextClimate.Add(clearData);
             }
 
 			for (int cycle = 0; cycle < 40; cycle++)
@@ -505,6 +538,11 @@ namespace TheZooMustGrow
 				{
 					EvolveClimate(i);
 				}
+
+				// Swap the two climate lists each cycle
+				List<ClimateData> swap = climate;
+				climate = nextClimate;
+				nextClimate = swap;
 			}
 		}
 
@@ -553,7 +591,7 @@ namespace TheZooMustGrow
 					continue;
 				}
 				
-				ClimateData neighborClimate = climate[neighbor.Index];
+				ClimateData neighborClimate = nextClimate[neighbor.Index];
 
 				// Disperse clouds
 				if (d == mainDispersalDirection)
@@ -579,13 +617,20 @@ namespace TheZooMustGrow
 					neighborClimate.moisture += seepage;
                 }
 
-				climate[neighbor.Index] = neighborClimate;
+				nextClimate[neighbor.Index] = neighborClimate;
 			}
-			// Current cells clouds have left, set to zero
-			cellClimate.clouds = 0f;
 
-			climate[cellIndex] = cellClimate;
-        }
+			ClimateData nextCellClimate = nextClimate[cellIndex];
+			nextCellClimate.moisture += cellClimate.moisture;
+			// Limit moisture to 1
+			if (nextCellClimate.moisture > 1f)
+			{
+				nextCellClimate.moisture = 1f;
+			}
+
+			nextClimate[cellIndex] = nextCellClimate;
+			climate[cellIndex] = new ClimateData();
+		}
 
 	}
 }
