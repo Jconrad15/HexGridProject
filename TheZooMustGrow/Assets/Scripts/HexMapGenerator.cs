@@ -98,6 +98,23 @@ namespace TheZooMustGrow
 		[Range(0f, 1f)]
 		public float extraLakeProbability = 0.25f;
 
+		[Range(0f, 1f)]
+		public float lowTemperature = 0f;
+
+		[Range(0f, 1f)]
+		public float highTemperature = 1f;
+
+		public enum HemisphereMode
+		{
+			Both, North, South
+		}
+
+		public HemisphereMode hemisphere;
+
+		[Range(0f, 1f)]
+		public float temperatureJitter = 0.1f;
+		private int temperatureJitterChannel;
+
 		public void GenerateMap(int x, int z)
 		{
 			Random.State originalRandomState = Random.state;
@@ -298,9 +315,14 @@ namespace TheZooMustGrow
 
 		private void SetTerrainType()
 		{
+			temperatureJitterChannel = Random.Range(0, 4);
 			for (int i = 0; i < cellCount; i++)
 			{
 				HexCell cell = grid.GetCell(i);
+
+				float temperature = DetermineTemperature(cell);
+				cell.SetMapData(temperature);
+
 				float moisture = climate[i].moisture;
 				if (!cell.IsUnderwater)
 				{
@@ -827,5 +849,37 @@ namespace TheZooMustGrow
 			return length;
 		}
 
+		private float DetermineTemperature(HexCell cell)
+        {
+			float latitude = (float)cell.coordinates.Z / grid.cellCountZ;
+
+			if (hemisphere == HemisphereMode.Both)
+			{
+				latitude *= 2f;
+				if (latitude > 1f)
+				{
+					latitude = 2f - latitude;
+				}
+			}
+			else if (hemisphere == HemisphereMode.North)
+			{
+				latitude = 1f - latitude;
+			}
+
+			float temperature =
+				Mathf.LerpUnclamped(lowTemperature, highTemperature, latitude);
+
+			// Scale temperature by elevation
+			temperature *= 1f - (cell.ViewElevation - waterLevel) /
+					(elevationMaximum - waterLevel + 1f);
+
+			// Add noise to the temperature
+			float jitter = 
+				HexMetrics.SampleNoise(cell.Position * 0.1f)[temperatureJitterChannel];
+			temperature += (jitter * 2f - 1f) * temperatureJitter;
+
+			return temperature;
+
+        }
 	}
 }
