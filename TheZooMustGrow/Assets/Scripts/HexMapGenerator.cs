@@ -7,6 +7,7 @@ namespace TheZooMustGrow
 	{
 		public HexGrid grid;
 		private int cellCount;
+		private int landCells;
 
 		public int seed;
 		public bool useFixedSeed;
@@ -22,6 +23,7 @@ namespace TheZooMustGrow
 
 		private List<ClimateData> climate = new List<ClimateData>();
 		private List<ClimateData> nextClimate = new List<ClimateData>();
+		private List<HexDirection> flowDirections = new List<HexDirection>();
 
 		struct ClimateData
         {
@@ -90,6 +92,12 @@ namespace TheZooMustGrow
 		[Range(1f, 10f)]
 		public float windStrength = 4f;
 
+		[Range(0, 20)]
+		public int riverPercentage = 10;
+
+		[Range(0f, 1f)]
+		public float extraLakeProbability = 0.25f;
+
 		public void GenerateMap(int x, int z)
 		{
 			Random.State originalRandomState = Random.state;
@@ -126,6 +134,7 @@ namespace TheZooMustGrow
 			CreateLand();
 			ErodeLand();
 			CreateClimate();
+			CreateRivers();
 			SetTerrainType();
 
             // Set all search phase variables in cells to zero
@@ -140,6 +149,7 @@ namespace TheZooMustGrow
 		private void CreateLand()
         {
             int landBudget = Mathf.RoundToInt(cellCount * landPercentage * 0.01f);
+			landCells = landBudget;
 
 			for (int guard = 0; guard < 10000; guard++)
 			{
@@ -175,6 +185,7 @@ namespace TheZooMustGrow
 			if (landBudget > 0)
             {
 				Debug.LogWarning("Failed to use up " + landBudget + "land budget.");
+				landCells -= landBudget;
             }
         }
 
@@ -318,7 +329,6 @@ namespace TheZooMustGrow
 				{
 					cell.TerrainTypeIndex = 2;
 				}
-				cell.SetMapData(moisture);
 			}
 		}
 
@@ -630,6 +640,191 @@ namespace TheZooMustGrow
 
 			nextClimate[cellIndex] = nextCellClimate;
 			climate[cellIndex] = new ClimateData();
+		}
+
+
+		private void CreateRivers()
+        {
+			List<HexCell> riverOrigins = ListPool<HexCell>.Get();
+
+			// Determine a weight for each cell
+			for (int i = 0; i < cellCount; i++)
+			{
+				HexCell cell = grid.GetCell(i);
+				if (cell.IsUnderwater)
+				{
+					continue;
+				}
+				ClimateData data = climate[i];
+				float weight =
+					data.moisture * (cell.Elevation - waterLevel) /
+					(elevationMaximum - waterLevel);
+				if (weight > 0.75f)
+				{
+					riverOrigins.Add(cell);
+					riverOrigins.Add(cell);
+				}
+				if (weight > 0.5f)
+				{
+					riverOrigins.Add(cell);
+				}
+				if (weight > 0.25f)
+				{
+					riverOrigins.Add(cell);
+				}
+			}
+
+			int riverBudget = Mathf.RoundToInt(landCells * riverPercentage * 0.01f);
+
+			// Select river origin cells
+			while (riverBudget > 0 && riverOrigins.Count > 0)
+			{
+				int index = Random.Range(0, riverOrigins.Count);
+				int lastIndex = riverOrigins.Count - 1;
+				HexCell origin = riverOrigins[index];
+				riverOrigins[index] = riverOrigins[lastIndex];
+				riverOrigins.RemoveAt(lastIndex);
+
+				// Check to create the river
+				if (!origin.HasRiver)
+                {
+					bool isValidOrigin = true;
+
+					for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+					{
+						HexCell neighbor = origin.GetNeighbor(d);
+
+						// Don't place river origin next to existing river or water
+						if (neighbor && (neighbor.HasRiver || neighbor.IsUnderwater))
+						{
+							isValidOrigin = false;
+							break;
+						}
+					}
+
+					if (isValidOrigin)
+					{
+						riverBudget -= CreateRiver(origin);
+					}
+				}
+
+			}
+
+			if (riverBudget > 0)
+			{
+				Debug.LogWarning("Failed to use up river budget.");
+			}
+
+
+			ListPool<HexCell>.Add(riverOrigins);
+		}
+
+		private int CreateRiver(HexCell origin)
+		{
+			int length = 1;
+
+			HexCell cell = origin;
+			HexDirection direction = HexDirection.NE;
+
+			while (!cell.IsUnderwater)
+            {
+				int minNeighborElevation = int.MaxValue;
+				flowDirections.Clear();
+				
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+				{
+					HexCell neighbor = cell.GetNeighbor(d);
+
+					if (!neighbor)
+					{
+						continue;
+					}
+
+					// Set min neighbor elevation which helps place lakes
+					if (neighbor.Elevation < minNeighborElevation)
+					{
+						minNeighborElevation = neighbor.Elevation;
+					}
+
+					// If neighbor already has river, exit
+					if (neighbor == origin || neighbor.HasIncomingRiver)
+					{
+						continue;
+					}
+
+					// Skip neighbor cell if it is uphill
+					int delta = neighbor.Elevation - cell.Elevation;
+					if (delta > 0)
+                    {
+						continue;
+                    }
+
+					// If the neighbor has and outgoing river but no incoming river,
+					// then it is an origin point, merge the rivers and return
+					if (neighbor.HasOutgoingRiver)
+					{
+						cell.SetOutgoingRiver(d);
+						return length;
+					}
+
+					// If downhill 'weight' the cell list with the neighbor tile
+					if (delta < 0)
+					{
+						flowDirections.Add(d);
+						flowDirections.Add(d);
+						flowDirections.Add(d);
+					}
+
+					// If not multiple sharp turns in a row,
+					// 'weight' the cell list with the neighbor tile
+					if (length == 1 ||
+						(d != direction.Next2() && d != direction.Previous2()))
+                    {
+						flowDirections.Add(d);
+                    }
+
+					flowDirections.Add(d);
+				}
+
+				// If no place to flow to, make lake or exit
+				if (flowDirections.Count == 0)
+				{
+					// If river is only 1 long, return 0
+					if (length == 1)
+					{
+						return 0;
+					}
+
+					if (minNeighborElevation >= cell.Elevation)
+					{
+						cell.WaterLevel = minNeighborElevation;
+						if (minNeighborElevation == cell.Elevation)
+						{
+							cell.Elevation = minNeighborElevation - 1;
+						}
+					}
+					break;
+
+				}
+
+				direction = flowDirections[Random.Range(0, flowDirections.Count)];
+				
+				cell.SetOutgoingRiver(direction);
+				length += 1;
+
+				// Create extra lakes
+				if (minNeighborElevation >= cell.Elevation &&
+					Random.value < extraLakeProbability)
+                {
+					cell.WaterLevel = cell.Elevation;
+					cell.Elevation -= 1;
+                }
+
+				cell = cell.GetNeighbor(direction);
+            }
+
+
+			return length;
 		}
 
 	}
