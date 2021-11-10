@@ -173,6 +173,11 @@ namespace TheZooMustGrow
             if (x > 0)
             {
                 cell.SetNeighbor(HexDirection.W, cells[i - 1]);
+                // Also check for wrapping
+                if (wrapping && x == cellCountX - 1)
+                {
+                    cell.SetNeighbor(HexDirection.E, cells[i - x]);
+                }
             }
             // SE/SW
             if (z > 0)
@@ -187,6 +192,11 @@ namespace TheZooMustGrow
                     {
                         cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX - 1]);
                     }
+                    // Check for wrapping
+                    else if (wrapping)
+                    {
+                        cell.SetNeighbor(HexDirection.SW, cells[i - 1]);
+                    }
                 }
                 else
                 {
@@ -195,6 +205,13 @@ namespace TheZooMustGrow
                     if (x < cellCountX - 1)
                     {
                         cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX + 1]);
+                    }
+                    // Check for wrapping
+                    else if (wrapping)
+                    {
+                        cell.SetNeighbor(
+                            HexDirection.SE, cells[i - cellCountX * 2 + 1]
+                        );
                     }
                 }
             }
