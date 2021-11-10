@@ -8,6 +8,7 @@ namespace TheZooMustGrow
 		public HexMapGenerator mapGenerator;
 
 		bool generateMaps = true;
+		bool wrapping = true;
 
 		public void ToggleMapGeneration(bool toggle)
 		{
@@ -45,14 +46,19 @@ namespace TheZooMustGrow
         {
 			if (generateMaps)
 			{
-				mapGenerator.GenerateMap(x, z);
+				mapGenerator.GenerateMap(x, z, wrapping);
 			}
 			else
 			{
-				hexGrid.CreateMap(x, z);
+				hexGrid.CreateMap(x, z, wrapping);
 			}
 			HexMapCamera.ValidatePosition();
 			Close();
+        }
+
+		public void ToggleWrapping(bool toggle)
+        {
+			wrapping = toggle;
         }
 
 

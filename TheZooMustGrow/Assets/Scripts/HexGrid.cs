@@ -44,6 +44,7 @@ namespace TheZooMustGrow
         }
 
         private List<HexUnit> units = new List<HexUnit>();
+        public bool wrapping;
 
         private void Awake()
         {
@@ -52,10 +53,10 @@ namespace TheZooMustGrow
             HexUnit.unitPrefab = unitPrefab;
             cellShaderData = gameObject.AddComponent<HexCellShaderData>();
             cellShaderData.Grid = this;
-            CreateMap(cellCountX, cellCountZ);
+            CreateMap(cellCountX, cellCountZ, wrapping);
         }
 
-        public bool CreateMap(int x, int z)
+        public bool CreateMap(int x, int z, bool wrapping)
         {
             // Verify sizes
             if (x <= 0 || x % HexMetrics.chunkSizeX != 0 ||
@@ -78,6 +79,7 @@ namespace TheZooMustGrow
 
             cellCountX = x;
             cellCountZ = z;
+            this.wrapping = wrapping;
 
             chunkCountX = cellCountX / HexMetrics.chunkSizeX;
             chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
@@ -570,7 +572,7 @@ namespace TheZooMustGrow
             if (x != cellCountX || z != cellCountZ)
             {
                 // Abort if map creation failed
-                if (!CreateMap(x, z)) { return; }
+                if (!CreateMap(x, z, wrapping)) { return; }
             }
 
             bool originalImmediateMode = cellShaderData.ImmediateMode;

@@ -137,7 +137,7 @@ namespace TheZooMustGrow
 			new Biome(0, 0), new Biome(1, 0), new Biome(1, 1), new Biome(1, 2),
 			new Biome(0, 0), new Biome(1, 1), new Biome(1, 2), new Biome(1, 3)};
 
-		public void GenerateMap(int x, int z)
+		public void GenerateMap(int x, int z, bool wrapping)
 		{
 			Random.State originalRandomState = Random.state;
 
@@ -153,7 +153,7 @@ namespace TheZooMustGrow
 			cellCount = x * z;
 
 			// Generate base map
-			grid.CreateMap(x, z);
+			grid.CreateMap(x, z, wrapping);
 
             // Initiate search frontier
             if (searchFrontier == null)
