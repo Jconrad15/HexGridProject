@@ -183,6 +183,11 @@ namespace TheZooMustGrow
 		    ProvideGenerationData();
         }
 
+		public void SetTemperatureJitter(float temperatureJitter)
+        {
+			generationData.temperatureJitter = temperatureJitter;
+			ProvideGenerationData();
+        }
 
 	}
 }

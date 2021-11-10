@@ -56,6 +56,8 @@ namespace TheZooMustGrow
 
 		public float highTemperature;
 
+		public float temperatureJitter;
+
 		public void SetDefaults()
         {
 			jitterProbability = 0.25f;
@@ -106,7 +108,9 @@ namespace TheZooMustGrow
 			lowTemperature = 0f;
 
 			highTemperature = 1f;
-	}
+
+			temperatureJitter = 0.1f;
+		}
 
 	}
 }
