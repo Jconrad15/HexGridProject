@@ -4286,7 +4286,7 @@ GameObject:
   - component: {fileID: 230903007}
   - component: {fileID: 230903006}
   m_Layer: 5
-  m_Name: Cancel Button
+  m_Name: Back Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7344,6 +7344,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2d435d957dcdba418c3e509b00da7ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hexMapGenerator: {fileID: 634816967}
 --- !u!114 &342584424
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11866,31 +11867,6 @@ MonoBehaviour:
   grid: {fileID: 585186749}
   seed: 0
   useFixedSeed: 0
-  jitterProbability: 0.25
-  chunkSizeMin: 30
-  chunkSizeMax: 100
-  landPercentage: 50
-  waterLevel: 3
-  highRiseProbability: 0.25
-  sinkProbability: 0.2
-  elevationMinimum: -2
-  elevationMaximum: 8
-  mapBorderX: 5
-  mapBorderZ: 5
-  regionBorder: 5
-  regionCount: 1
-  erosionPercentage: 50
-  startingMoisture: 0.1
-  evaporationFactor: 0.5
-  precipitationFactor: 0.25
-  runoffFactor: 0.25
-  seepageFactor: 0.125
-  windFromDirection: 5
-  windStrength: 4
-  riverPercentage: 10
-  extraLakeProbability: 0.25
-  lowTemperature: 0
-  highTemperature: 1
   hemisphere: 0
   temperatureJitter: 0.1
 --- !u!4 &634816968
@@ -23131,7 +23107,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Cancel
+  m_text: Back
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

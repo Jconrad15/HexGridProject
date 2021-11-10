@@ -6,11 +6,14 @@ namespace TheZooMustGrow
 {
     public class GenerationDataMenu : MonoBehaviour
     {
-        public HexMapGeneratorData data = new HexMapGeneratorData();
+        public HexMapGeneratorData generationData = new HexMapGeneratorData();
+
+		[SerializeField]
+		private HexMapGenerator hexMapGenerator;
 
         private void OnEnable()
         {
-            data.SetDefaults();
+            generationData.SetDefaults();
         }
 
         public void Open()
@@ -25,130 +28,160 @@ namespace TheZooMustGrow
 			HexMapCamera.Locked = false;
 		}
 
+		private void ProvideGenerationData()
+        {
+			hexMapGenerator.generatorData = generationData;
+        }
+
 		public void SetJitterProbability(float jitterProbability)
         {
-			data.jitterProbability = jitterProbability;
+			generationData.jitterProbability = jitterProbability;
+			ProvideGenerationData();
         }
 
 		public void SetChunkSizeMin(Single chunkSizeMin)
 		{
-			data.chunkSizeMin = (int)chunkSizeMin;
+			generationData.chunkSizeMin = (int)chunkSizeMin;
+			ProvideGenerationData();
 		}
 
 		public void SetChunkSizeMax(Single chunkSizeMax)
 		{
-			data.chunkSizeMax = (int)chunkSizeMax;
+			generationData.chunkSizeMax = (int)chunkSizeMax;
+			ProvideGenerationData();
 		}
 
 		public void SetLandPercentage(Single landPercentage)
 		{
-			data.landPercentage = (int)landPercentage;
+			generationData.landPercentage = (int)landPercentage;
+			ProvideGenerationData();
 		}
 
 		public void SetWaterLevel(Single waterLevel)
 		{
-			data.waterLevel = (int)waterLevel;
-		}
+			generationData.waterLevel = (int)waterLevel;
+		    ProvideGenerationData();
+        }
 
 		public void SetHighRiseProbability(float highRiseProbability)
 		{
-			data.highRiseProbability = highRiseProbability;
-		}
+			generationData.highRiseProbability = highRiseProbability;
+		    ProvideGenerationData();
+        }
 
 		public void SetSinkProbability(float sinkProbability)
 		{
-			data.sinkProbability = sinkProbability;
-		}
+			generationData.sinkProbability = sinkProbability;
+		    ProvideGenerationData();
+        }
 
 		public void SetElevationMinimum(Single elevationMinimum)
 		{
-			data.elevationMinimum = (int)elevationMinimum;
-		}
+			generationData.elevationMinimum = (int)elevationMinimum;
+		    ProvideGenerationData();
+        }
 
 		public void SetElevationMaximum(Single elevationMaximum)
 		{
-			data.elevationMaximum = (int)elevationMaximum;
-		}
+			generationData.elevationMaximum = (int)elevationMaximum;
+		    ProvideGenerationData();
+        }
 
 		public void SetMapBorderX(Single mapBorderX)
 		{
-			data.mapBorderX = (int)mapBorderX;
-		}
+			generationData.mapBorderX = (int)mapBorderX;
+		    ProvideGenerationData();
+        }
 
 		public void SetMapBorderZ(Single mapBorderZ)
 		{
-			data.mapBorderZ = (int)mapBorderZ;
-		}
+			generationData.mapBorderZ = (int)mapBorderZ;
+		    ProvideGenerationData();
+        }
 
 		public void SetRegionBorder(Single regionBorder)
 		{
-			data.regionBorder = (int)regionBorder;
-		}
+			generationData.regionBorder = (int)regionBorder;
+		    ProvideGenerationData();
+        }
 
 		public void SetRegionCount(Single regionCount)
 		{
-			data.regionCount = (int)regionCount;
-		}
+			generationData.regionCount = (int)regionCount;
+		    ProvideGenerationData();
+        }
 
 		public void SetErosionPercentage(Single erosionPercentage)
 		{
-			data.erosionPercentage = (int)erosionPercentage;
-		}
+			generationData.erosionPercentage = (int)erosionPercentage;
+		    ProvideGenerationData();
+        }
 
 		public void SetStartingMoisture(float startingMoisture)
 		{
-			data.startingMoisture = startingMoisture;
-		}
+			generationData.startingMoisture = startingMoisture;
+		    ProvideGenerationData();
+        }
 
 		public void SetEvaporationFactor(float evaporationFactor)
 		{
-			data.evaporationFactor = evaporationFactor;
-		}
+			generationData.evaporationFactor = evaporationFactor;
+		    ProvideGenerationData();
+        }
 
 		public void SetPrecipitationFactor(float precipitationFactor)
 		{
-			data.precipitationFactor = precipitationFactor;
-		}
+			generationData.precipitationFactor = precipitationFactor;
+		    ProvideGenerationData();
+        }
 
 		public void SetRunoffFactor(float runoffFactor)
 		{
-			data.runoffFactor = runoffFactor;
-		}
+			generationData.runoffFactor = runoffFactor;
+		    ProvideGenerationData();
+        }
 
 		public void SetSeepageFactor(float seepageFactor)
 		{
-			data.seepageFactor = seepageFactor;
-		}
+			generationData.seepageFactor = seepageFactor;
+		    ProvideGenerationData();
+        }
 
 		public void SetWindFromDirection(Single windFromDirection)
         {
-			data.windFromDirection = (HexDirection)windFromDirection;
+			generationData.windFromDirection = (HexDirection)windFromDirection;
+            ProvideGenerationData();
         }
 
 		public void SetWindStrength(float windStrength)
 		{
-			data.windStrength = windStrength;
-		}
+			generationData.windStrength = windStrength;
+		    ProvideGenerationData();
+        }
 
 		public void SetRiverPercentage(Single riverPercentage)
 		{
-			data.riverPercentage = (int)riverPercentage;
-		}
+			generationData.riverPercentage = (int)riverPercentage;
+		    ProvideGenerationData();
+        }
 
 		public void SetExtraLakeProbability(float extraLakeProbability)
 		{
-			data.extraLakeProbability = extraLakeProbability;
-		}
+			generationData.extraLakeProbability = extraLakeProbability;
+		    ProvideGenerationData();
+        }
 
 		public void SetLowTemperature(float lowTemperature)
 		{
-			data.lowTemperature = lowTemperature;
-		}
+			generationData.lowTemperature = lowTemperature;
+		    ProvideGenerationData();
+        }
 
 		public void SetHighTemperature(float highTemperature)
 		{
-			data.highTemperature = highTemperature;
-		}
+			generationData.highTemperature = highTemperature;
+		    ProvideGenerationData();
+        }
 
 
 	}

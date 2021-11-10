@@ -31,6 +31,8 @@ namespace TheZooMustGrow
 			public float moisture;
         }
 
+		public HexMapGeneratorData generatorData;
+/*
 		[Range(0f, 0.5f)]
 		public float jitterProbability = 0.25f;
 
@@ -102,7 +104,7 @@ namespace TheZooMustGrow
 		public float lowTemperature = 0f;
 
 		[Range(0f, 1f)]
-		public float highTemperature = 1f;
+		public float highTemperature = 1f;*/
 
 		public enum HemisphereMode
 		{
@@ -137,7 +139,13 @@ namespace TheZooMustGrow
 			new Biome(0, 0), new Biome(1, 0), new Biome(1, 1), new Biome(1, 2),
 			new Biome(0, 0), new Biome(1, 1), new Biome(1, 2), new Biome(1, 3)};
 
-		public void GenerateMap(int x, int z, bool wrapping)
+        private void OnEnable()
+        {
+			generatorData = new HexMapGeneratorData();
+			generatorData.SetDefaults();
+        }
+
+        public void GenerateMap(int x, int z, bool wrapping)
 		{
 			Random.State originalRandomState = Random.state;
 
@@ -164,7 +172,7 @@ namespace TheZooMustGrow
             // Set base water level
             for (int i = 0; i < cellCount; i++)
             {
-				grid.GetCell(i).WaterLevel = waterLevel;
+				grid.GetCell(i).WaterLevel = generatorData.waterLevel;
             }
 
 			// Set land bound constraints
@@ -187,19 +195,19 @@ namespace TheZooMustGrow
 
 		private void CreateLand()
         {
-            int landBudget = Mathf.RoundToInt(cellCount * landPercentage * 0.01f);
+            int landBudget = Mathf.RoundToInt(cellCount * generatorData.landPercentage * 0.01f);
 			landCells = landBudget;
 
 			for (int guard = 0; guard < 10000; guard++)
 			{
-				bool sink = Random.value < sinkProbability;
+				bool sink = Random.value < generatorData.sinkProbability;
 
 				// Loop through regions
 				for (int i = 0; i < regions.Count; i++)
 				{
 					MapRegion region = regions[i];
 
-					int chunkSize = Random.Range(chunkSizeMin, chunkSizeMax + 1);
+					int chunkSize = Random.Range(generatorData.chunkSizeMin, generatorData.chunkSizeMax + 1);
 
 					// Determine to raise or sink land
 					if (sink)
@@ -240,7 +248,7 @@ namespace TheZooMustGrow
 
 			HexCoordinates center = firstCell.coordinates;
 
-			int rise = Random.value < highRiseProbability ? 2 : 1;
+			int rise = Random.value < generatorData.highRiseProbability ? 2 : 1;
 			int size = 0;
 			while (size < chunkSize && searchFrontier.Count > 0)
             {
@@ -249,7 +257,7 @@ namespace TheZooMustGrow
 				int originalElevation = current.Elevation;
 
 				int newElevation = originalElevation + rise;
-				if (newElevation > elevationMaximum)
+				if (newElevation > generatorData.elevationMaximum)
                 {
 					continue;
                 }
@@ -257,8 +265,8 @@ namespace TheZooMustGrow
 				current.Elevation = newElevation;
 
 				// If the current cell has been raised passed the water level and check budget
-				if (originalElevation < waterLevel &&
-					newElevation >= waterLevel 
+				if (originalElevation < generatorData.waterLevel &&
+					newElevation >= generatorData.waterLevel 
 					&& --budget == 0)
                 {
 					break;
@@ -272,7 +280,7 @@ namespace TheZooMustGrow
                     {
 						neighbor.SearchPhase = searchFrontierPhase;
 						neighbor.Distance = neighbor.coordinates.DistanceTo(center);
-						neighbor.SearchHeuristic = Random.value < jitterProbability ? 1 : 0;
+						neighbor.SearchHeuristic = Random.value < generatorData.jitterProbability ? 1 : 0;
 						searchFrontier.Enqueue(neighbor);
                     }
 
@@ -294,7 +302,7 @@ namespace TheZooMustGrow
 
 			HexCoordinates center = firstCell.coordinates;
 
-			int sink = Random.value < highRiseProbability ? 2 : 1;
+			int sink = Random.value < generatorData.highRiseProbability ? 2 : 1;
 			int size = 0;
 			while (size < chunkSize && searchFrontier.Count > 0)
 			{
@@ -302,7 +310,7 @@ namespace TheZooMustGrow
 				int originalElevation = current.Elevation;
 
 				int newElevation = current.Elevation - sink;
-				if (newElevation < elevationMinimum)
+				if (newElevation < generatorData.elevationMinimum)
                 {
 					continue;
                 }
@@ -310,8 +318,8 @@ namespace TheZooMustGrow
 				current.Elevation = newElevation;
 
 				// If the current cell has been lowered passed the water level
-				if (originalElevation >= waterLevel &&
-					newElevation < waterLevel
+				if (originalElevation >= generatorData.waterLevel &&
+					newElevation < generatorData.waterLevel
 					&& --budget == 0)
 				{
 					budget += 1;
@@ -325,7 +333,7 @@ namespace TheZooMustGrow
 					{
 						neighbor.SearchPhase = searchFrontierPhase;
 						neighbor.Distance = neighbor.coordinates.DistanceTo(center);
-						neighbor.SearchHeuristic = Random.value < jitterProbability ? 1 : 0;
+						neighbor.SearchHeuristic = Random.value < generatorData.jitterProbability ? 1 : 0;
 						searchFrontier.Enqueue(neighbor);
 					}
 
@@ -340,7 +348,7 @@ namespace TheZooMustGrow
 			temperatureJitterChannel = Random.Range(0, 4);
 
 			int rockDesertElevation =
-				elevationMaximum - (elevationMaximum - waterLevel) / 2;
+				generatorData.elevationMaximum - (generatorData.elevationMaximum - generatorData.waterLevel) / 2;
 
 			for (int i = 0; i < cellCount; i++)
 			{
@@ -380,7 +388,7 @@ namespace TheZooMustGrow
 						}
 					}
 					// If max elevation, set to snow
-					else if (cell.Elevation == elevationMaximum)
+					else if (cell.Elevation == generatorData.elevationMaximum)
 					{
 						cellBiome.terrain = 4;
 					}
@@ -405,7 +413,7 @@ namespace TheZooMustGrow
 				{
 					// For underwater cells
 					int terrain;
-					if (cell.Elevation == waterLevel - 1)
+					if (cell.Elevation == generatorData.waterLevel - 1)
 					{
 						// For shallow water determine coast type
 						int cliffs = 0, slopes = 0;
@@ -444,7 +452,7 @@ namespace TheZooMustGrow
 							terrain = 1;
 						}
 					}
-					else if (cell.Elevation >= waterLevel)
+					else if (cell.Elevation >= generatorData.waterLevel)
 					{
 						// Grass in higher elevation lakes
 						terrain = 1;
@@ -487,9 +495,9 @@ namespace TheZooMustGrow
 				regions.Clear();
             }
 
-			int borderX = grid.wrapping ? regionBorder : mapBorderX;
+			int borderX = grid.wrapping ? generatorData.regionBorder : generatorData.mapBorderX;
 			MapRegion region;
-			switch (regionCount)
+			switch (generatorData.regionCount)
 			{
 				default:
 					if (grid.wrapping)
@@ -498,19 +506,19 @@ namespace TheZooMustGrow
 					}
 					region.xMin = borderX;
 					region.xMax = grid.cellCountX - borderX;
-					region.zMin = mapBorderZ;
-					region.zMax = grid.cellCountZ - mapBorderZ;
+					region.zMin = generatorData.mapBorderZ;
+					region.zMax = grid.cellCountZ - generatorData.mapBorderZ;
 					regions.Add(region);
 					break;
 				case 2:
 					if (Random.value < 0.5f)
 					{
 						region.xMin = borderX;
-						region.xMax = grid.cellCountX / 2 - regionBorder;
-						region.zMin = mapBorderZ;
-						region.zMax = grid.cellCountZ - mapBorderZ;
+						region.xMax = grid.cellCountX / 2 - generatorData.regionBorder;
+						region.zMin = generatorData.mapBorderZ;
+						region.zMax = grid.cellCountZ - generatorData.mapBorderZ;
 						regions.Add(region);
-						region.xMin = grid.cellCountX / 2 + regionBorder;
+						region.xMin = grid.cellCountX / 2 + generatorData.regionBorder;
 						region.xMax = grid.cellCountX - borderX;
 						regions.Add(region);
 					}
@@ -522,41 +530,41 @@ namespace TheZooMustGrow
 						}
 						region.xMin = borderX;
 						region.xMax = grid.cellCountX - borderX;
-						region.zMin = mapBorderZ;
-						region.zMax = grid.cellCountZ / 2 - regionBorder;
+						region.zMin = generatorData.mapBorderZ;
+						region.zMax = grid.cellCountZ / 2 - generatorData.regionBorder;
 						regions.Add(region);
-						region.zMin = grid.cellCountZ / 2 + regionBorder;
-						region.zMax = grid.cellCountZ - mapBorderZ;
+						region.zMin = grid.cellCountZ / 2 + generatorData.regionBorder;
+						region.zMax = grid.cellCountZ - generatorData.mapBorderZ;
 						regions.Add(region);
 					}
 					break;
 				case 3:
 					region.xMin = borderX;
-					region.xMax = grid.cellCountX / 3 - regionBorder;
-					region.zMin = mapBorderZ;
-					region.zMax = grid.cellCountZ - mapBorderZ;
+					region.xMax = grid.cellCountX / 3 - generatorData.regionBorder;
+					region.zMin = generatorData.mapBorderZ;
+					region.zMax = grid.cellCountZ - generatorData.mapBorderZ;
 					regions.Add(region);
-					region.xMin = grid.cellCountX / 3 + regionBorder;
-					region.xMax = grid.cellCountX * 2 / 3 - regionBorder;
+					region.xMin = grid.cellCountX / 3 + generatorData.regionBorder;
+					region.xMax = grid.cellCountX * 2 / 3 - generatorData.regionBorder;
 					regions.Add(region);
-					region.xMin = grid.cellCountX * 2 / 3 + regionBorder;
+					region.xMin = grid.cellCountX * 2 / 3 + generatorData.regionBorder;
 					region.xMax = grid.cellCountX - borderX;
 					regions.Add(region);
 					break;
 				case 4:
 					region.xMin = borderX;
-					region.xMax = grid.cellCountX / 2 - regionBorder;
-					region.zMin = mapBorderZ;
-					region.zMax = grid.cellCountZ / 2 - regionBorder;
+					region.xMax = grid.cellCountX / 2 - generatorData.regionBorder;
+					region.zMin = generatorData.mapBorderZ;
+					region.zMax = grid.cellCountZ / 2 - generatorData.regionBorder;
 					regions.Add(region);
-					region.xMin = grid.cellCountX / 2 + regionBorder;
+					region.xMin = grid.cellCountX / 2 + generatorData.regionBorder;
 					region.xMax = grid.cellCountX - borderX;
 					regions.Add(region);
-					region.zMin = grid.cellCountZ / 2 + regionBorder;
-					region.zMax = grid.cellCountZ - mapBorderZ;
+					region.zMin = grid.cellCountZ / 2 + generatorData.regionBorder;
+					region.zMax = grid.cellCountZ - generatorData.mapBorderZ;
 					regions.Add(region);
 					region.xMin = borderX;
-					region.xMax = grid.cellCountX / 2 - regionBorder;
+					region.xMax = grid.cellCountX / 2 - generatorData.regionBorder;
 					regions.Add(region);
 					break;
 			}
@@ -576,7 +584,7 @@ namespace TheZooMustGrow
 
 			// Determine the number to leave as erodible
 			int targetErodibleCount = 
-				(int)(erodibleCells.Count * (100 - erosionPercentage) * 0.01f);
+				(int)(erodibleCells.Count * (100 - generatorData.erosionPercentage) * 0.01f);
 
 			while (erodibleCells.Count > targetErodibleCount)
 			{
@@ -680,7 +688,7 @@ namespace TheZooMustGrow
 			nextClimate.Clear();
 
 			ClimateData initialData = new ClimateData();
-			initialData.moisture = startingMoisture;
+			initialData.moisture = generatorData.startingMoisture;
 			ClimateData clearData = new ClimateData();
 			for (int i = 0; i < cellCount; i++)
             {
@@ -711,21 +719,21 @@ namespace TheZooMustGrow
 			if (cell.IsUnderwater)
             {
 				cellClimate.moisture = 1f;
-				cellClimate.clouds += evaporationFactor;
+				cellClimate.clouds += generatorData.evaporationFactor;
             }
             else
             {
-				float evaporation = cellClimate.moisture * evaporationFactor;
+				float evaporation = cellClimate.moisture * generatorData.evaporationFactor;
 				cellClimate.moisture -= evaporation;
 				cellClimate.clouds += evaporation;
 			}
 
 			// Precipitate water from clouds to moisture
-			float precipitation = cellClimate.clouds * precipitationFactor;
+			float precipitation = cellClimate.clouds * generatorData.precipitationFactor;
 			cellClimate.clouds -= precipitation;
 			cellClimate.moisture += precipitation;
 
-			float cloudMaximum = 1f - cell.ViewElevation / (elevationMaximum + 1f);
+			float cloudMaximum = 1f - cell.ViewElevation / (generatorData.elevationMaximum + 1f);
 			// If there is more clouds than allowed, precipitate
 			if (cellClimate.clouds > cloudMaximum)
 			{
@@ -735,10 +743,10 @@ namespace TheZooMustGrow
 
 
 			// Disperse clouds and moisture
-			HexDirection mainDispersalDirection = windFromDirection.Opposite();
-			float cloudDispersal = cellClimate.clouds * (1f / (5f + windStrength));
-			float runoff = cellClimate.moisture * runoffFactor * (1f / 6f);
-			float seepage = cellClimate.moisture * seepageFactor * (1f / 6f);
+			HexDirection mainDispersalDirection = generatorData.windFromDirection.Opposite();
+			float cloudDispersal = cellClimate.clouds * (1f / (5f + generatorData.windStrength));
+			float runoff = cellClimate.moisture * generatorData.runoffFactor * (1f / 6f);
+			float seepage = cellClimate.moisture * generatorData.seepageFactor * (1f / 6f);
 			for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
 			{
 				HexCell neighbor = cell.GetNeighbor(d);
@@ -752,7 +760,7 @@ namespace TheZooMustGrow
 				// Disperse clouds
 				if (d == mainDispersalDirection)
 				{
-					neighborClimate.clouds += cloudDispersal * windStrength;
+					neighborClimate.clouds += cloudDispersal * generatorData.windStrength;
 				}
 				else
 				{
@@ -803,8 +811,8 @@ namespace TheZooMustGrow
 				}
 				ClimateData data = climate[i];
 				float weight =
-					data.moisture * (cell.Elevation - waterLevel) /
-					(elevationMaximum - waterLevel);
+					data.moisture * (cell.Elevation - generatorData.waterLevel) /
+					(generatorData.elevationMaximum - generatorData.waterLevel);
 				if (weight > 0.75f)
 				{
 					riverOrigins.Add(cell);
@@ -820,7 +828,7 @@ namespace TheZooMustGrow
 				}
 			}
 
-			int riverBudget = Mathf.RoundToInt(landCells * riverPercentage * 0.01f);
+			int riverBudget = Mathf.RoundToInt(landCells * generatorData.riverPercentage * 0.01f);
 
 			// Select river origin cells
 			while (riverBudget > 0 && riverOrigins.Count > 0)
@@ -960,7 +968,7 @@ namespace TheZooMustGrow
 
 				// Create extra lakes
 				if (minNeighborElevation >= cell.Elevation &&
-					Random.value < extraLakeProbability)
+					Random.value < generatorData.extraLakeProbability)
                 {
 					cell.WaterLevel = cell.Elevation;
 					cell.Elevation -= 1;
@@ -990,12 +998,14 @@ namespace TheZooMustGrow
 				latitude = 1f - latitude;
 			}
 
-			float temperature =
-				Mathf.LerpUnclamped(lowTemperature, highTemperature, latitude);
+			float temperature = Mathf.LerpUnclamped(
+				generatorData.lowTemperature,
+				generatorData.highTemperature,
+				latitude);
 
 			// Scale temperature by elevation
-			temperature *= 1f - (cell.ViewElevation - waterLevel) /
-					(elevationMaximum - waterLevel + 1f);
+			temperature *= 1f - (cell.ViewElevation - generatorData.waterLevel) /
+					(generatorData.elevationMaximum - generatorData.waterLevel + 1f);
 
 			// Add noise to the temperature
 			float jitter = 
