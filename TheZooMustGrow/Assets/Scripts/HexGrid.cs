@@ -161,7 +161,10 @@ namespace TheZooMustGrow
             HexCell cell = cells[i] = Instantiate(cellPrefab);
             cell.transform.localPosition = position;
             cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+            
             cell.Index = i;
+            cell.ColumnIndex = x / HexMetrics.chunkSizeX;
+
             // Assign shader data component
             cell.ShaderData = cellShaderData;
 

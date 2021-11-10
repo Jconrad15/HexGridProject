@@ -373,6 +373,9 @@ namespace TheZooMustGrow
             }
         }
 
+        public int ColumnIndex { get; set; }
+
+
         /// <summary>
         /// Returns the neighboring HexCell in the provided direction.
         /// </summary>
