@@ -119,7 +119,7 @@ namespace TheZooMustGrow
             // The X position has a minimum of zero, and a maximum defined by the map size minus a 0.5 offset
             float xMax =
                 ((grid.cellCountX * HexMetrics.chunkSizeX) - 0.5f) *
-                (2f * HexMetrics.innerRadius);
+                HexMetrics.innerDiameter;
             position.x = Mathf.Clamp(position.x, 0f, xMax);
 
             // The Z position has a minimum of zero, and a maximum defined by the map size minus a 1 offset

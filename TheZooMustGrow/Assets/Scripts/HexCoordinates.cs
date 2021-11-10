@@ -48,7 +48,7 @@ namespace TheZooMustGrow
 
         public static HexCoordinates FromPosition(Vector3 position)
         {
-            float x = position.x / (HexMetrics.innerRadius * 2f);
+            float x = position.x / HexMetrics.innerDiameter;
             float y = -x;
 
             float offset = position.z / (HexMetrics.outerRadius * 3f);

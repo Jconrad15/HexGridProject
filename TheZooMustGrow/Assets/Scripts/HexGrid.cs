@@ -81,6 +81,9 @@ namespace TheZooMustGrow
             cellCountZ = z;
             this.wrapping = wrapping;
 
+            // Set Hexmetric wrap size
+            HexMetrics.wrapSize = wrapping ? cellCountX : 0;
+
             chunkCountX = cellCountX / HexMetrics.chunkSizeX;
             chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
 
@@ -126,6 +129,10 @@ namespace TheZooMustGrow
                 HexMetrics.noiseSource = noiseSource;
                 HexMetrics.InitializeHashGrid(seed);
                 HexUnit.unitPrefab = unitPrefab;
+
+                // Set Hexmetric wrap size
+                HexMetrics.wrapSize = wrapping ? cellCountX : 0;
+
                 ResetVisibility();
             }
         }
@@ -134,7 +141,7 @@ namespace TheZooMustGrow
         {
             Vector3 position;
             // Note integer division in x
-            position.x = (x + (z * 0.5f) - z / 2) * (HexMetrics.innerRadius * 2f);
+            position.x = (x + (z * 0.5f) - z / 2) * HexMetrics.innerDiameter;
             position.y = 0f;
             position.z = z * (HexMetrics.outerRadius * 1.5f);
 
