@@ -18,6 +18,7 @@ Shader "Custom/Road" {
 			#pragma target 3.0
 			#pragma multi_compile _ HEX_MAP_EDIT_MODE
 
+			#include "HexMetrics.cginc"
 			#include "HexCellData.cginc"
 
 			sampler2D _MainTex;
@@ -45,7 +46,8 @@ Shader "Custom/Road" {
 
 			void surf(Input IN, inout SurfaceOutputStandardSpecular o) {
 				// Get noise from a noise texture
-				float4 noise = tex2D(_MainTex, IN.worldPos.xz * 0.025);
+				float4 noise =
+					tex2D(_MainTex, IN.worldPos.xz * (3 * TILING_SCALE));
 				fixed4 c = _Color * ((noise.y * 0.75 + 0.25) * IN.visibility.x);
 
 				// Blend with terrain using U coord
