@@ -539,6 +539,9 @@ namespace TheZooMustGrow
             writer.Write(cellCountX);
             writer.Write(cellCountZ);
 
+            // Saving the wrapping toggle
+            writer.Write(wrapping);
+
             // Save the cell data
             for (int i = 0; i < cells.Length; i++)
             {
@@ -567,9 +570,10 @@ namespace TheZooMustGrow
                 z = reader.ReadInt32();
             }
 
+            bool wrapping = header >= 5 ? reader.ReadBoolean() : false;
             // If the cell size does not change,
             // do not need to create a new map
-            if (x != cellCountX || z != cellCountZ)
+            if (x != cellCountX || z != cellCountZ || this.wrapping != wrapping)
             {
                 // Abort if map creation failed
                 if (!CreateMap(x, z, wrapping)) { return; }
