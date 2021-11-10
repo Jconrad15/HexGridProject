@@ -30,7 +30,8 @@ namespace TheZooMustGrow
 					x, z, TextureFormat.RGBA32, false, true);
 
 				cellTexture.filterMode = FilterMode.Point;
-				cellTexture.wrapMode = TextureWrapMode.Clamp;
+				cellTexture.wrapModeU = TextureWrapMode.Repeat;
+				cellTexture.wrapModeV = TextureWrapMode.Clamp;
 
 				// Make the cell texture available globally
 				Shader.SetGlobalTexture("_HexCellData", cellTexture);

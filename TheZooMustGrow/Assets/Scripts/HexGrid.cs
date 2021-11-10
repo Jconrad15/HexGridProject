@@ -168,8 +168,16 @@ namespace TheZooMustGrow
             // Assign shader data component
             cell.ShaderData = cellShaderData;
 
-            cell.Explorable =
-                x > 0 && z > 0 && x < cellCountX - 1 && z < cellCountZ - 1;
+            // Set edges to not explorable based on wrapping
+            if (wrapping)
+            {
+                cell.Explorable = z > 0 && z < cellCountZ - 1;
+            }
+            else
+            {
+                cell.Explorable =
+                    x > 0 && z > 0 && x < cellCountX - 1 && z < cellCountZ - 1;
+            }
 
             // Set neighboring HexCells
             // East/west neighbors
@@ -433,7 +441,6 @@ namespace TheZooMustGrow
         {
             units.Add(unit);
             unit.Grid = this;
-            unit.transform.SetParent(transform, false);
             unit.Location = location;
             unit.Orientation = orientation;
         }
@@ -613,6 +620,11 @@ namespace TheZooMustGrow
 
             }
 
+        }
+
+        public void MakeChildOfColumn(Transform child, int columnIndex)
+        {
+            child.SetParent(columns[columnIndex], false);
         }
 
         public void Save(BinaryWriter writer)
