@@ -108,10 +108,35 @@ namespace TheZooMustGrow
 
         public int DistanceTo(HexCoordinates other)
         {
-            // Absolute value of x, y, and z components
-            return ((x < other.x ? other.x - x : x - other.x) +
-                   (Y < other.Y ? other.Y - Y : Y - other.Y) +
-                   (z < other.z ? other.z - z : z - other.z)) / 2;
+            int xy =
+                (x < other.x ? other.x - x : x - other.x) +
+                (Y < other.Y ? other.Y - Y : Y - other.Y);
+
+            // Check for wrapping
+            if (HexMetrics.Wrapping)
+            {
+                other.x += HexMetrics.wrapSize;
+                int xyWrapped =
+                    (x < other.x ? other.x - x : x - other.x) +
+                    (Y < other.Y ? other.Y - Y : Y - other.Y);
+                if (xyWrapped < xy)
+                {
+                    xy = xyWrapped;
+                }
+                else
+                {
+                    other.x -= 2 * HexMetrics.wrapSize;
+                    xyWrapped =
+                        (x < other.x ? other.x - x : x - other.x) +
+                        (Y < other.Y ? other.Y - Y : Y - other.Y);
+                    if (xyWrapped < xy)
+                    {
+                        xy = xyWrapped;
+                    }
+                }
+            }
+
+            return (xy + (z < other.z ? other.z - z : z - other.z)) / 2;
         }
 
         public void Save(BinaryWriter writer)
