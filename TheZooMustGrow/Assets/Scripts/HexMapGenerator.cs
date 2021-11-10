@@ -88,7 +88,7 @@ namespace TheZooMustGrow
 		[Range(0f, 1f)]
 		public float seepageFactor = 0.125f;
 
-		public HexDirection windDirection = HexDirection.NW;
+		public HexDirection windFromDirection = HexDirection.NW;
 		[Range(1f, 10f)]
 		public float windStrength = 4f;
 
@@ -735,7 +735,7 @@ namespace TheZooMustGrow
 
 
 			// Disperse clouds and moisture
-			HexDirection mainDispersalDirection = windDirection.Opposite();
+			HexDirection mainDispersalDirection = windFromDirection.Opposite();
 			float cloudDispersal = cellClimate.clouds * (1f / (5f + windStrength));
 			float runoff = cellClimate.moisture * runoffFactor * (1f / 6f);
 			float seepage = cellClimate.moisture * seepageFactor * (1f / 6f);
