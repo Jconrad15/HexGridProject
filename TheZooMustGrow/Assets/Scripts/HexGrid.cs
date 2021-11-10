@@ -9,6 +9,9 @@ namespace TheZooMustGrow
 {
     public class HexGrid : MonoBehaviour
     {
+        private Transform[] columns;
+        private int currentCenterColumnIndex = -1;
+
         public HexUnit unitPrefab;
 
         public int cellCountX = 20, cellCountZ = 15;
@@ -69,17 +72,18 @@ namespace TheZooMustGrow
             // Clear old data
             ClearPath();
             ClearUnits();
-            if (chunks != null)
+            if (columns != null)
             {
-                for (int i = 0; i < chunks.Length; i++)
+                for (int i = 0; i < columns.Length; i++)
                 {
-                    Destroy(chunks[i].gameObject);
+                    Destroy(columns[i].gameObject);
                 }
             }
 
             cellCountX = x;
             cellCountZ = z;
             this.wrapping = wrapping;
+            currentCenterColumnIndex = -1; //-1==default value
 
             // Set Hexmetric wrap size
             HexMetrics.wrapSize = wrapping ? cellCountX : 0;
@@ -97,6 +101,15 @@ namespace TheZooMustGrow
 
         private void CreateChunks()
         {
+            // Create column info
+            columns = new Transform[chunkCountX];
+            for (int x = 0; x < chunkCountX; x++)
+            {
+                columns[x] = new GameObject("Column").transform;
+                columns[x].SetParent(transform, false);
+            }
+
+            // Create chunk info
             chunks = new HexGridChunk[chunkCountX * chunkCountZ];
 
             for (int z = 0, i = 0; z < chunkCountZ; z++)
@@ -104,7 +117,7 @@ namespace TheZooMustGrow
                 for (int x = 0; x < chunkCountX; x++)
                 {
                     HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab);
-                    chunk.transform.SetParent(transform);
+                    chunk.transform.SetParent(columns[x], false);
                 }
             }
         }
@@ -538,6 +551,49 @@ namespace TheZooMustGrow
                 HexUnit unit = units[i];
                 IncreaseVisibility(unit.Location, unit.VisionRange);
             }
+        }
+
+        public void CenterMap(float xPosition)
+        {
+            int centerColumnIndex = 
+                (int)(xPosition / (HexMetrics.innerDiameter * HexMetrics.chunkSizeX));
+
+            if (centerColumnIndex == currentCenterColumnIndex)
+            {
+                return;
+            }
+
+            currentCenterColumnIndex = centerColumnIndex;
+
+            int minColumnIndex = centerColumnIndex - (chunkCountX / 2);
+            int maxColumnIndex = centerColumnIndex + (chunkCountX / 2);
+
+            Vector3 position;
+            position.y = position.z = 0f;
+            for (int i = 0; i < columns.Length; i++)
+            {
+                // Check if position is too small
+                if (i < minColumnIndex)
+                {
+                    position.x = chunkCountX *
+                        (HexMetrics.innerDiameter * HexMetrics.chunkSizeX);
+                }
+                // Check if position is too large
+                else if (i > maxColumnIndex)
+                {
+                    position.x = chunkCountX *
+                        -(HexMetrics.innerDiameter * HexMetrics.chunkSizeX);
+                }
+                else
+                {
+                    // Otherwise zero
+                    position.x = 0f;
+                }
+
+                columns[i].localPosition = position;
+
+            }
+
         }
 
         public void Save(BinaryWriter writer)

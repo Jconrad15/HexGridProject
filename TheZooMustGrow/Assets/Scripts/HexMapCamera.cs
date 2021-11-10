@@ -40,6 +40,7 @@ namespace TheZooMustGrow
         void OnEnable()
         {
             instance = this;
+            ValidatePosition();
         }
 
         void Update()
@@ -111,7 +112,20 @@ namespace TheZooMustGrow
 
             Vector3 position = transform.localPosition;
             position += direction * distance;
-            transform.localPosition = ClampPosition(position);
+            transform.localPosition = 
+                grid.wrapping ? WrapPosition(position) : ClampPosition(position);
+        }
+
+        private Vector3 WrapPosition(Vector3 position)
+        {
+            float xMax = (grid.cellCountX - 0.5f) * HexMetrics.innerDiameter;
+            position.x = Mathf.Clamp(position.x, 0f, xMax);
+
+            float zMax = (grid.cellCountZ - 1) * (1.5f * HexMetrics.outerRadius);
+            position.z = Mathf.Clamp(position.z, 0f, zMax);
+
+            grid.CenterMap(position.x);
+            return position;
         }
 
         private Vector3 ClampPosition(Vector3 position)
