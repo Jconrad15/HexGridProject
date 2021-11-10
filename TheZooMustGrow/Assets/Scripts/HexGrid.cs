@@ -245,8 +245,7 @@ namespace TheZooMustGrow
             position = transform.InverseTransformPoint(position);
             HexCoordinates coordinates = HexCoordinates.FromPosition(position);
 
-            int index = coordinates.X + coordinates.Z * cellCountX + coordinates.Z / 2;
-            return cells[index];
+            return GetCell(coordinates);
         }
 
         public HexCell GetCell(HexCoordinates coordinates)
