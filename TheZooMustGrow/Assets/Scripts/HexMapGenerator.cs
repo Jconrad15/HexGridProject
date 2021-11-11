@@ -5,10 +5,6 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
-		int roadPercentage = 10;
-		int maxRoadLength = 20;
-		int minRoadLength = 5;
-
 		public HexGrid grid;
 		private int cellCount;
 		private int landCells;
@@ -759,7 +755,7 @@ namespace TheZooMustGrow
 				}
 			}
 
-			int roadBudget = Mathf.RoundToInt(landCells * roadPercentage * 0.01f);
+			int roadBudget = Mathf.RoundToInt(landCells * generatorData.roadPercentage * 0.01f);
 
 			// Select road origin cells
 			while (roadBudget > 0 && roadOrigins.Count > 0)
@@ -789,7 +785,8 @@ namespace TheZooMustGrow
 			HexCell cell = origin;
 			HexDirection direction = HexDirection.NE;
 
-			int maxRoadDistance = Random.Range(minRoadLength, maxRoadLength + 1);
+			int maxRoadDistance = Random.Range(
+				generatorData.minRoadLength, generatorData.maxRoadLength + 1);
 
 			while (cell.IsUnderwater == false &&
 				   cell.DoAllNeighborsHaveRoads() == false &&
