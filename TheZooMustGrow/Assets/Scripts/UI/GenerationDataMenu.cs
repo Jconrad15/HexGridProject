@@ -207,5 +207,22 @@ namespace TheZooMustGrow
 			ProvideGenerationData();
 		}
 
+		public void SetUrbanPercentage(Single urbanPercentage)
+		{
+			generationData.urbanPercentage = (int)urbanPercentage;
+			ProvideGenerationData();
+		}
+
+		public void SetMinUrbanStamp(Single minUrbanStamp)
+		{
+			generationData.minUrbanStamp= (int)minUrbanStamp;
+			ProvideGenerationData();
+		}
+
+		public void SetMaxUrbanStamp(Single maxUrbanStamp)
+		{
+			generationData.maxUrbanStamp = (int)maxUrbanStamp;
+			ProvideGenerationData();
+		}
 	}
 }

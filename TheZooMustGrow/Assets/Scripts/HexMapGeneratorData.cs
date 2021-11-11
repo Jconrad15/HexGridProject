@@ -65,6 +65,12 @@ namespace TheZooMustGrow
 
 		public int minRoadLength;
 
+		public int urbanPercentage;
+
+		public int minUrbanStamp;
+
+		public int maxUrbanStamp;
+
 		public void SetDefaults()
         {
 			jitterProbability = 0.25f;
@@ -123,6 +129,12 @@ namespace TheZooMustGrow
 			maxRoadLength = 20;
 
 			minRoadLength = 6;
+
+			urbanPercentage = 5;
+
+			minUrbanStamp = 4;
+
+			maxUrbanStamp = 8;
 		}
 
 	}

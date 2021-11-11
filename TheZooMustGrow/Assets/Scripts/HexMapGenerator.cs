@@ -5,11 +5,6 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
-
-		private int maxUrbanPercent = 5;
-		private int minUrbanStamp = 4;
-		private int MaxUrbanStamp = 8;
-		
 		public HexGrid grid;
 		private int cellCount;
 		private int landCells;
@@ -902,7 +897,7 @@ namespace TheZooMustGrow
 				}
 			}
 
-			int urbanBudget = Mathf.RoundToInt(landCells * maxUrbanPercent * 0.01f);
+			int urbanBudget = Mathf.RoundToInt(landCells * generatorData.urbanPercentage * 0.01f);
 
 			// Select urban center cells
 			while (urbanBudget > 0 && urbanCenters.Count > 0)
@@ -940,7 +935,7 @@ namespace TheZooMustGrow
 			HexDirection direction = HexDirection.NE;
 
 			int urbanStamp = Random.Range(
-				minUrbanStamp, MaxUrbanStamp + 1);
+				generatorData.minUrbanStamp, generatorData.maxUrbanStamp + 1);
 
 			while (cell.IsUnderwater == false &&
 				   size <= urbanStamp &&
