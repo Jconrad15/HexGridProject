@@ -891,7 +891,7 @@ namespace TheZooMustGrow
 				{
 					urbanCenters.Add(cell);
 				}
-				if (roadCount > 2)
+				if (roadCount > 1)
 				{
 					urbanCenters.Add(cell);
 				}
@@ -915,7 +915,6 @@ namespace TheZooMustGrow
 					urbanBudget -= CreateUrban(origin);
 				}
 			}
-
 			if (urbanBudget > 0)
 			{
 				Debug.LogWarning("Failed to use up urban budget.");
