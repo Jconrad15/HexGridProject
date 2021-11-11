@@ -575,6 +575,17 @@ namespace TheZooMustGrow
             }
         }
 
+        public bool DoAllNeighborsHaveRoads()
+        {
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                if (HasRoadThroughEdge(d) == false)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         public void RemoveRoads()
         {

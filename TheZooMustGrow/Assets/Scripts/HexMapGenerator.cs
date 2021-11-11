@@ -5,6 +5,10 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
+		float roadPercentage = 10;
+		int maxRoadLength = 20;
+		int minRoadLength = 5;
+
 		public HexGrid grid;
 		private int cellCount;
 		private int landCells;
@@ -24,6 +28,7 @@ namespace TheZooMustGrow
 		private List<ClimateData> climate = new List<ClimateData>();
 		private List<ClimateData> nextClimate = new List<ClimateData>();
 		private List<HexDirection> flowDirections = new List<HexDirection>();
+		private List<HexDirection> roadDirections = new List<HexDirection>();
 
 		struct ClimateData
         {
@@ -107,6 +112,7 @@ namespace TheZooMustGrow
 			ErodeLand();
 			CreateClimate();
 			CreateRivers();
+			CreateRoads();
 			SetTerrainType();
 
             // Set all search phase variables in cells to zero
@@ -721,6 +727,143 @@ namespace TheZooMustGrow
 			climate[cellIndex] = new ClimateData();
 		}
 
+		private void CreateRoads()
+        {
+			List<HexCell> roadOrigins = ListPool<HexCell>.Get();
+
+			// Determine a weight for each cell
+			for (int i = 0; i < cellCount; i++)
+            {
+				HexCell cell = grid.GetCell(i);
+				// No roads underwater
+				if (cell.IsUnderwater)
+                {
+					continue;
+                }
+
+				// Random road weighting
+				float weight = Random.Range(0f, 1f);
+				
+				if (weight > 0.8f)
+				{
+					roadOrigins.Add(cell);
+					roadOrigins.Add(cell);
+				}
+				if (weight > 0.6f)
+				{
+					roadOrigins.Add(cell);
+				}
+				if (weight > 0.4f)
+				{
+					roadOrigins.Add(cell);
+				}
+			}
+
+			int roadBudget = Mathf.RoundToInt(landCells * roadPercentage * 0.01f);
+
+			// Select road origin cells
+			while (roadBudget > 0 && roadOrigins.Count > 0)
+			{
+				int index = Random.Range(0, roadOrigins.Count);
+				int lastIndex = roadOrigins.Count - 1;
+				HexCell origin = roadOrigins[index];
+				roadOrigins[index] = roadOrigins[lastIndex];
+				roadOrigins.RemoveAt(lastIndex);
+
+				// Check to create the road
+				roadBudget -= CreateRoad(origin);
+			}
+
+			if (roadBudget > 0)
+			{
+				Debug.LogWarning("Failed to use up road budget.");
+			}
+
+			ListPool<HexCell>.Add(roadOrigins);
+		}
+
+		private int CreateRoad(HexCell origin)
+        {
+			int length = 1;
+
+			HexCell cell = origin;
+			HexDirection direction = HexDirection.NE;
+
+			int maxRoadDistance = Random.Range(minRoadLength, maxRoadLength + 1);
+
+			while (cell.IsUnderwater == false &&
+				   cell.DoAllNeighborsHaveRoads() == false &&
+				   length <= maxRoadDistance)
+			{
+				roadDirections.Clear();
+
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+				{
+					HexCell neighbor = cell.GetNeighbor(d);
+
+					if (!neighbor)
+					{
+						continue;
+					}
+
+					// If neighbor is underwater, exit
+					if (neighbor.IsUnderwater == true)
+                    {
+						continue;
+                    }
+
+					// If neighbor already has road through this edge, exit
+					if (neighbor == origin || neighbor.HasRoadThroughEdge(d.Opposite()))
+					{
+						continue;
+					}
+
+					// Skip neighbor cell if it is steep uphill
+					int delta = neighbor.Elevation - cell.Elevation;
+					if (delta > 1)
+					{
+						continue;
+					}
+
+					// If no roads in next sharp directions
+					// 'weight' the cell list with the neighbor tile
+					HexCell neighborNext = cell.GetNeighbor(d.Next());
+					HexCell neighborPrevious = cell.GetNeighbor(d.Next());
+					if (neighborNext && neighborPrevious)
+					{
+						if (cell.GetNeighbor(d.Next()).HasRoads == false &&
+							cell.GetNeighbor(d.Previous()).HasRoads == false)
+						{
+							roadDirections.Add(d);
+							roadDirections.Add(d);
+						}
+					}
+
+					roadDirections.Add(d);
+				}
+
+				// If no place to bring road to, exit
+				if (roadDirections.Count == 0)
+				{
+					// If road is only 1 long, return 0
+					if (length == 1)
+					{
+						return 0;
+					}
+
+					break;
+				}
+
+				direction = roadDirections[Random.Range(0, roadDirections.Count)];
+
+				cell.AddRoad(direction);
+				length += 1;
+
+				cell = cell.GetNeighbor(direction);
+			}
+
+			return length;
+		}
 
 		private void CreateRivers()
         {
@@ -734,9 +877,9 @@ namespace TheZooMustGrow
 				{
 					continue;
 				}
-				ClimateData data = climate[i];
+				ClimateData currentClimateData = climate[i];
 				float weight =
-					data.moisture * (cell.Elevation - generatorData.waterLevel) /
+					currentClimateData.moisture * (cell.Elevation - generatorData.waterLevel) /
 					(generatorData.elevationMaximum - generatorData.waterLevel);
 				if (weight > 0.75f)
 				{
