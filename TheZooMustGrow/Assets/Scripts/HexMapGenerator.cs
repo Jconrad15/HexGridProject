@@ -969,6 +969,12 @@ namespace TheZooMustGrow
 						continue;
 					}
 
+					// If neighbor is snow, exit
+					if (neighbor.TerrainTypeIndex == 6)
+                    {
+						continue;
+                    }
+
 					// If neighbor has max farm, exit
 					if (neighbor.FarmLevel == 3)
 					{
