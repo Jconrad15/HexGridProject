@@ -587,6 +587,17 @@ namespace TheZooMustGrow
             return true;
         }
 
+        /// <summary>
+        /// Returns the number of roads connected to the cell.
+        /// </summary>
+        /// <returns></returns>
+        public int GetRoadCount()
+        {
+            if (roads == null) { return 0; }
+
+            return roads.Length;
+        }
+
         public void RemoveRoads()
         {
             for (int i = 0; i < neighbors.Length; i++)

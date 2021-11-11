@@ -5,6 +5,11 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
+
+		private int maxUrbanPercent = 5;
+		private int minUrbanStamp = 4;
+		private int MaxUrbanStamp = 8;
+		
 		public HexGrid grid;
 		private int cellCount;
 		private int landCells;
@@ -25,6 +30,7 @@ namespace TheZooMustGrow
 		private List<ClimateData> nextClimate = new List<ClimateData>();
 		private List<HexDirection> flowDirections = new List<HexDirection>();
 		private List<HexDirection> roadDirections = new List<HexDirection>();
+		private List<HexDirection> urbanDirections = new List<HexDirection>();
 
 		struct ClimateData
         {
@@ -110,6 +116,8 @@ namespace TheZooMustGrow
 			CreateRivers();
 			CreateRoads();
 			SetTerrainType();
+
+			CreateUrban();
 
             // Set all search phase variables in cells to zero
             for (int i = 0; i < cellCount; i++)
@@ -750,15 +758,15 @@ namespace TheZooMustGrow
 					roadOrigins.Add(cell);
 				}
 				if (weight > 0.4f)
-				{
-					roadOrigins.Add(cell);
-				}
+                {
+                    roadOrigins.Add(cell);
+                }
 			}
 
 			int roadBudget = Mathf.RoundToInt(landCells * generatorData.roadPercentage * 0.01f);
 
-			// Select road origin cells
-			while (roadBudget > 0 && roadOrigins.Count > 0)
+            // Select road origin cells
+            while (roadBudget > 0 && roadOrigins.Count > 0)
 			{
 				int index = Random.Range(0, roadOrigins.Count);
 				int lastIndex = roadOrigins.Count - 1;
@@ -860,6 +868,142 @@ namespace TheZooMustGrow
 			}
 
 			return length;
+		}
+
+		private void CreateUrban()
+		{
+			List<HexCell> urbanCenters = ListPool<HexCell>.Get();
+
+			// Determine a weight for each cell
+			for (int i = 0; i < cellCount; i++)
+			{
+				HexCell cell = grid.GetCell(i);
+				
+				// No urban underwater
+				if (cell.IsUnderwater)
+				{
+					continue;
+				}
+
+				float roadCount = cell.GetRoadCount();
+
+				if (roadCount > 5)
+				{
+					urbanCenters.Add(cell);
+					urbanCenters.Add(cell);
+				}
+				if (roadCount > 3)
+				{
+					urbanCenters.Add(cell);
+				}
+				if (roadCount > 2)
+				{
+					urbanCenters.Add(cell);
+				}
+			}
+
+			int urbanBudget = Mathf.RoundToInt(landCells * maxUrbanPercent * 0.01f);
+
+			// Select urban center cells
+			while (urbanBudget > 0 && urbanCenters.Count > 0)
+			{
+				int index = Random.Range(0, urbanCenters.Count);
+				int lastIndex = urbanCenters.Count - 1;
+				HexCell origin = urbanCenters[index];
+				urbanCenters[index] = urbanCenters[lastIndex];
+				urbanCenters.RemoveAt(lastIndex);
+
+				// Check to create urban
+				// If less than max urban level
+				if (origin.UrbanLevel < 3)
+				{
+					urbanBudget -= CreateUrban(origin);
+				}
+			}
+
+			if (urbanBudget > 0)
+			{
+				Debug.LogWarning("Failed to use up urban budget.");
+			}
+
+			ListPool<HexCell>.Add(urbanCenters);
+		}
+
+		private int CreateUrban(HexCell urbanCenter)
+		{
+			int maxCounter = 200;
+			int counter = 0;
+
+			int size = 1;
+
+			HexCell cell = urbanCenter;
+			HexDirection direction = HexDirection.NE;
+
+			int urbanStamp = Random.Range(
+				minUrbanStamp, MaxUrbanStamp + 1);
+
+			while (cell.IsUnderwater == false &&
+				   size <= urbanStamp &&
+				   counter <= maxCounter)
+			{
+				urbanDirections.Clear();
+
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+				{
+					HexCell neighbor = cell.GetNeighbor(d);
+
+					if (!neighbor)
+					{
+						continue;
+					}
+
+					// If neighbor is underwater, exit
+					if (neighbor.IsUnderwater == true)
+					{
+						continue;
+					}
+
+					// If neighbor has max urban, exit
+					if (neighbor.UrbanLevel == 3)
+					{
+						continue;
+					}
+
+					// Skip neighbor cell if it is steep uphill
+					int delta = neighbor.Elevation - cell.Elevation;
+					if (delta > 1)
+					{
+						continue;
+					}
+
+					urbanDirections.Add(d);
+				}
+
+				// If no place to place urban, exit
+				if (urbanDirections.Count == 0)
+				{
+					// If urban is only 1 long, return 0
+					if (size == 1)
+					{
+						return 0;
+					}
+
+					break;
+				}
+
+				direction = urbanDirections[Random.Range(0, urbanDirections.Count)];
+
+				// Increase size if urban level increased from 0
+				if (cell.UrbanLevel == 0)
+				{
+					size += 1;
+				}
+				cell.UrbanLevel += 1;
+
+				cell = cell.GetNeighbor(direction);
+			}
+
+			return size;
 		}
 
 		private void CreateRivers()
