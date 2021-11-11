@@ -875,7 +875,7 @@ namespace TheZooMustGrow
 				HexCell cell = grid.GetCell(i);
 				
 				// No urban underwater
-				if (cell.IsUnderwater)
+				if (cell.IsUnderwater || cell.TerrainTypeIndex == 5)
 				{
 					continue;
 				}
