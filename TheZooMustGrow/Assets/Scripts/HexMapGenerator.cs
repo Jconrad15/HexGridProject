@@ -5,7 +5,7 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
-		float roadPercentage = 10;
+		int roadPercentage = 10;
 		int maxRoadLength = 20;
 		int minRoadLength = 5;
 

@@ -46,6 +46,7 @@ namespace TheZooMustGrow
 		public float seepageFactor;
 
 		public HexDirection windFromDirection;
+
 		public float windStrength;
 
 		public int riverPercentage;
@@ -57,6 +58,12 @@ namespace TheZooMustGrow
 		public float highTemperature;
 
 		public float temperatureJitter;
+
+		public int roadPercentage;
+
+		public int maxRoadLength;
+
+		public int minRoadLength;
 
 		public void SetDefaults()
         {
@@ -110,6 +117,12 @@ namespace TheZooMustGrow
 			highTemperature = 1f;
 
 			temperatureJitter = 0.1f;
+
+			roadPercentage = 10;
+
+			maxRoadLength = 20;
+
+			minRoadLength = 6;
 		}
 
 	}

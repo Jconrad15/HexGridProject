@@ -189,5 +189,23 @@ namespace TheZooMustGrow
 			ProvideGenerationData();
         }
 
+		public void SetRoadPercentage(Single roadPercentage)
+		{
+			generationData.roadPercentage = (int)roadPercentage;
+			ProvideGenerationData();
+		}
+
+		public void SetMaxRoadLength(Single maxRoadLength)
+		{
+			generationData.maxRoadLength = (int)maxRoadLength;
+			ProvideGenerationData();
+		}
+
+		public void SetMinRoadLength(Single minRoadLength)
+		{
+			generationData.minRoadLength = (int)minRoadLength;
+			ProvideGenerationData();
+		}
+
 	}
 }
