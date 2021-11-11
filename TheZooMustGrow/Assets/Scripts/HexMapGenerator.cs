@@ -5,6 +5,10 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
+		private int farmPercentage = 10;
+		private int maxFarmStamp = 4;
+		private int minFarmStamp = 2;
+
 		public HexGrid grid;
 		private int cellCount;
 		private int landCells;
@@ -25,7 +29,7 @@ namespace TheZooMustGrow
 		private List<ClimateData> nextClimate = new List<ClimateData>();
 		private List<HexDirection> flowDirections = new List<HexDirection>();
 		private List<HexDirection> roadDirections = new List<HexDirection>();
-		private List<HexDirection> urbanDirections = new List<HexDirection>();
+		private List<HexDirection> featureLocations = new List<HexDirection>();
 
 		struct ClimateData
         {
@@ -112,7 +116,8 @@ namespace TheZooMustGrow
 			CreateRoads();
 			SetTerrainType();
 
-			CreateUrban();
+			CreateUrbans();
+			CreateFarms();
 
             // Set all search phase variables in cells to zero
             for (int i = 0; i < cellCount; i++)
@@ -865,7 +870,161 @@ namespace TheZooMustGrow
 			return length;
 		}
 
-		private void CreateUrban()
+		private void CreateFarms()
+		{
+			List<HexCell> farmCenter = ListPool<HexCell>.Get();
+
+			// Determine a weight for each cell
+			for (int i = 0; i < cellCount; i++)
+			{
+				HexCell cell = grid.GetCell(i);
+
+				// No farm centers underwater or on snow
+				if (cell.IsUnderwater || cell.TerrainTypeIndex == 5)
+				{
+					continue;
+				}
+
+				float roadCount = cell.GetRoadCount();
+
+				// Add farm center weight if road and small or no urban level
+				if (roadCount > 1 && cell.UrbanLevel <= 1)
+				{
+					farmCenter.Add(cell);
+					farmCenter.Add(cell);
+				}
+
+				// Add farm center weight based on number of neighbors with roads
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+                {
+                    HexCell neighbor = cell.GetNeighbor(d);
+					if (neighbor)
+					{
+						if (neighbor.HasRoads)
+						{
+							farmCenter.Add(cell);
+						}
+					}
+				}
+
+			}
+
+			int farmBudget = Mathf.RoundToInt(landCells * farmPercentage * 0.01f);
+
+			// Select farm center cells
+			while (farmBudget > 0 && farmCenter.Count > 0)
+			{
+				int index = Random.Range(0, farmCenter.Count);
+				int lastIndex = farmCenter.Count - 1;
+				HexCell origin = farmCenter[index];
+				farmCenter[index] = farmCenter[lastIndex];
+				farmCenter.RemoveAt(lastIndex);
+
+				// Check to create farm
+				// If less than max farm level
+				if (origin.FarmLevel < 3)
+				{
+					farmBudget -= CreateFarm(origin);
+				}
+			}
+			if (farmBudget > 0)
+			{
+				Debug.LogWarning("Failed to use up farm budget.");
+			}
+
+			ListPool<HexCell>.Add(farmCenter);
+		}
+
+		private int CreateFarm(HexCell farmCenter)
+		{
+			int maxCounter = cellCount;
+			int counter = 0;
+
+			int size = 1;
+
+			HexCell cell = farmCenter;
+			HexDirection direction = HexDirection.NE;
+
+			int farmStamp = Random.Range(
+				minFarmStamp, maxFarmStamp);
+
+			while (cell.IsUnderwater == false &&
+				   size <= farmStamp &&
+				   counter <= maxCounter)
+			{
+				featureLocations.Clear();
+
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+				{
+					HexCell neighbor = cell.GetNeighbor(d);
+
+					if (!neighbor)
+					{
+						continue;
+					}
+
+					// If neighbor is underwater, exit
+					if (neighbor.IsUnderwater == true)
+					{
+						continue;
+					}
+
+					// If neighbor has max farm, exit
+					if (neighbor.FarmLevel == 3)
+					{
+						continue;
+					}
+
+					// Skip neighbor cell if it is steep uphill
+					int delta = neighbor.Elevation - cell.Elevation;
+					if (delta > 1)
+					{
+						continue;
+					}
+
+					// Weight farm if no urban
+					if (neighbor.FarmLevel == 0)
+					{
+						featureLocations.Add(d);
+					}
+					
+					// Weight farm if road
+					if (neighbor.HasRoads == true)
+                    {
+						featureLocations.Add(d);
+					}
+
+					featureLocations.Add(d);
+				}
+
+				// If no place to place urban, exit
+				if (featureLocations.Count == 0)
+				{
+					// If urban is only 1 long, return 0
+					if (size == 1)
+					{
+						return 0;
+					}
+
+					break;
+				}
+
+				direction = featureLocations[Random.Range(0, featureLocations.Count)];
+
+				// Increase size if farm level increased from 0
+				if (cell.FarmLevel == 0)
+				{
+					size += 1;
+				}
+				cell.FarmLevel += 1;
+
+				cell = cell.GetNeighbor(direction);
+			}
+
+			return size;
+		}
+
+		private void CreateUrbans()
 		{
 			List<HexCell> urbanCenters = ListPool<HexCell>.Get();
 
@@ -940,7 +1099,7 @@ namespace TheZooMustGrow
 				   size <= urbanStamp &&
 				   counter <= maxCounter)
 			{
-				urbanDirections.Clear();
+				featureLocations.Clear();
 
 				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
 				{
@@ -973,16 +1132,15 @@ namespace TheZooMustGrow
 					// Weight urban if on road
 					if (neighbor.GetRoadCount() > 0)
                     {
-						urbanDirections.Add(d);
-						urbanDirections.Add(d);
+						featureLocations.Add(d);
+						featureLocations.Add(d);
 					}
 
-
-					urbanDirections.Add(d);
+					featureLocations.Add(d);
 				}
 
 				// If no place to place urban, exit
-				if (urbanDirections.Count == 0)
+				if (featureLocations.Count == 0)
 				{
 					// If urban is only 1 long, return 0
 					if (size == 1)
@@ -993,7 +1151,7 @@ namespace TheZooMustGrow
 					break;
 				}
 
-				direction = urbanDirections[Random.Range(0, urbanDirections.Count)];
+				direction = featureLocations[Random.Range(0, featureLocations.Count)];
 
 				// Increase size if urban level increased from 0
 				if (cell.UrbanLevel == 0)
