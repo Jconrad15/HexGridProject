@@ -931,7 +931,6 @@ namespace TheZooMustGrow
 
 		private int CreateUrban(HexCell urbanCenter)
 		{
-			Debug.Log("urban center road count: " + urbanCenter.GetRoadCount());
 			int maxCounter = cellCount;
 			int counter = 0;
 
