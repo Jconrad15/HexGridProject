@@ -1,8 +1,6 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace TheZooMustGrow
