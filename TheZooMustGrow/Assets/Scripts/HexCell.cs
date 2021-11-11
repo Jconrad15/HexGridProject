@@ -593,9 +593,18 @@ namespace TheZooMustGrow
         /// <returns></returns>
         public int GetRoadCount()
         {
-            if (roads == null) { return 0; }
+            int roadCount = 0;
+            if (roads == null) { return roadCount; }
 
-            return roads.Length;
+            for (int i = 0; i < roads.Length; i++)
+            {
+                if (roads[i] == true)
+                {
+                    roadCount += 1;
+                }
+            }
+
+            return roadCount;
         }
 
         public void RemoveRoads()

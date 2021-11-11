@@ -931,7 +931,8 @@ namespace TheZooMustGrow
 
 		private int CreateUrban(HexCell urbanCenter)
 		{
-			int maxCounter = 200;
+			Debug.Log("urban center road count: " + urbanCenter.GetRoadCount());
+			int maxCounter = cellCount;
 			int counter = 0;
 
 			int size = 1;
@@ -975,6 +976,14 @@ namespace TheZooMustGrow
 					{
 						continue;
 					}
+
+					// Weight urban if on road
+					if (neighbor.GetRoadCount() > 0)
+                    {
+						urbanDirections.Add(d);
+						urbanDirections.Add(d);
+					}
+
 
 					urbanDirections.Add(d);
 				}
