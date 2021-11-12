@@ -16,7 +16,7 @@ namespace TheZooMustGrow
 
         public const float elevationStep = 3f;
 
-        public const int terracesPerSlope = 2;
+        public const int terracesPerSlope = 1;
         public const int terraceSteps = (terracesPerSlope * 2) + 1;
         public const float horizontalTerraceStepSize = 1f / terraceSteps;
         public const float verticalTerraceStepSize = 1f / (terracesPerSlope + 1);
@@ -25,7 +25,7 @@ namespace TheZooMustGrow
         public const float cellPerturbStrength = 4f;
         // Scale the noise sampling so the texture covers a much larger area in worldspace
         public const float noiseScale = 0.003f;
-        public const float elevationPerturbStrength = 1.5f;
+        public const float elevationPerturbStrength = 0.5f;
 
         public const float labelOffset = 0.8f;
 
