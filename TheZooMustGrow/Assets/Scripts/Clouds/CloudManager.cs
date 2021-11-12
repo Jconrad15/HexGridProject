@@ -30,8 +30,8 @@ namespace TheZooMustGrow
             Random.State originalRandomState = Random.state;
             Random.InitState(seed);
 
-            // One cloud per chunk
-            cloudCountMax = hexGrid.GetChunkCount();
+            // Two clouds per chunk on average
+            cloudCountMax = hexGrid.GetChunkCount() * 2;
             clouds = new Transform[cloudCountMax];
 
             // Determine cloud positions
