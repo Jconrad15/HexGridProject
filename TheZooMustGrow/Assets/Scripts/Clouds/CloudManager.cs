@@ -20,8 +20,8 @@ namespace TheZooMustGrow
         private int minCloudSections = 6;
         private int maxCloudSections = 12;
 
-        float maxCloudRadius = 2f;
-        float minCloudRadius = 0.5f;
+        private float maxCloudRadius = 2f;
+        private float minCloudRadius = 0.5f;
 
         private Transform[] clouds;
 
