@@ -14,11 +14,14 @@ namespace TheZooMustGrow
 
         private int cloudCountMax;
 
-        private float minCloudOffGroundHeight = 10f;
-        private float maxCloudOffGroundHeight = 15f;
+        private float minCloudOffGroundHeight = 15f;
+        private float maxCloudOffGroundHeight = 20f;
 
         private int minCloudSections = 6;
         private int maxCloudSections = 12;
+
+        float maxCloudRadius = 2f;
+        float minCloudRadius = 0.5f;
 
         private Transform[] clouds;
 
@@ -85,20 +88,48 @@ namespace TheZooMustGrow
 
             // Determine cloud sizes and positions
             float[] cloudRadii = new float[cloudSections];
-            float maxRadius = 2f;
 
             Vector3[] cloudPositions = new Vector3[cloudSections];
-            Vector3 startingPos = new Vector3(2, 0, 0);
+            Vector3 previousPos = new Vector3(0, 0, 0);
 
             for (int i = 0; i < cloudSections; i++)
             {
-                cloudRadii[i] = maxRadius - (i / (float)cloudSections);
+                cloudRadii[i] = Mathf.Lerp(maxCloudRadius, minCloudRadius, (i/(float)cloudSections));
 
-                Vector3 pos = startingPos;
-                pos.x -= i > 0 ? cloudRadii[i - 1] + cloudRadii[i] : i;
+                Vector3 pos = previousPos;
+                if (i > 0)
+                {
+                    // Get random direction
+                    Vector3 direction = Vector3.zero;
+
+                    int abortCounter = 2000;
+                    int counter = 0;
+                    // Check if the direction brings pos too close to the previous pos
+                    while (Mathf.Abs(Vector3.Distance(pos + direction, previousPos))
+                        <= 0.8f * cloudRadii[i - 1])
+                    {
+                        if (counter >= abortCounter) 
+                        {
+                            Debug.LogWarning("Cloud direction abort counter reached");
+                            break; 
+                        }
+
+                        direction = new Vector3(
+                            Random.Range(-1f, 0.5f),
+                            Random.Range(-0.1f, 0.1f),
+                            Random.Range(-1f, 1f));
+
+                        direction = Vector3.Normalize(direction);
+                        direction *= cloudRadii[i - 1];
+
+                        counter += 1;
+                    }
+
+                    pos += direction;
+                }
+
                 cloudPositions[i] = pos;
-
-                startingPos = pos;
+                previousPos = pos;
             }
 
             // Create cloud GameObjects
