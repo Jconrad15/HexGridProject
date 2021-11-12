@@ -82,24 +82,35 @@ namespace TheZooMustGrow
             GameObject cloud = new GameObject("Cloud");
 
             int cloudSections = Random.Range(minCloudSections, maxCloudSections + 1);
-            
+
+            // Determine cloud sizes and positions
+            float[] cloudRadii = new float[cloudSections];
+            float maxRadius = 2f;
+
+            Vector3[] cloudPositions = new Vector3[cloudSections];
+            Vector3 startingPos = new Vector3(2, 0, 0);
+
             for (int i = 0; i < cloudSections; i++)
             {
-                // Determine position and size
-                Vector3 position = new Vector3(
-                    Random.Range(-2f, 2f),
-                    Random.Range(-1f, 1f),
-                    Random.Range(-2f, 2f));
+                cloudRadii[i] = maxRadius - (i / (float)cloudSections);
 
-                float radius = Random.Range(0.5f, 1.5f);
+                Vector3 pos = startingPos;
+                pos.x -= i > 0 ? cloudRadii[i - 1] + cloudRadii[i] : i;
+                cloudPositions[i] = pos;
 
+                startingPos = pos;
+            }
+
+            // Create cloud GameObjects
+            for (int i = 0; i < cloudSections; i++)
+            {
                 // Create Cloud Section
-                GameObject newCloudSection = IcoSphere.Create(cloudMaterial, radius);
+                GameObject newCloudSection = IcoSphere.Create(cloudMaterial, cloudRadii[i]);
                 newCloudSection.name = "CloudSection" + i.ToString();
                 newCloudSection.transform.SetParent(cloud.transform);
 
                 // Set position
-                newCloudSection.transform.localPosition = position;
+                newCloudSection.transform.localPosition = cloudPositions[i];
             }
 
             return cloud;
