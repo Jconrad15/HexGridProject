@@ -10585,6 +10585,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hexGrid: {fileID: 585186749}
+  cloudMaterial: {fileID: 2100000, guid: ffa20efed977bf14ab3dcd5630f8f0c4, type: 2}
 --- !u!1 &503919165
 GameObject:
   m_ObjectHideFlags: 0

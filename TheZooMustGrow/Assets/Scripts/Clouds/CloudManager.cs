@@ -9,10 +9,16 @@ namespace TheZooMustGrow
         [SerializeField]
         private HexGrid hexGrid;
 
+        [SerializeField]
+        private Material cloudMaterial;
+
         private int cloudCountMax;
 
         private float minCloudOffGroundHeight = 10f;
         private float maxCloudOffGroundHeight = 15f;
+
+        private int minCloudSections = 6;
+        private int maxCloudSections = 12;
 
         private Transform[] clouds;
 
@@ -54,7 +60,6 @@ namespace TheZooMustGrow
 
         private Transform PlaceCloud(HexCell targetCell, float height)
         {
-            Debug.Log("CreateCloud");
             GameObject sphere_go = CreateCloudShape();
 
             Vector3 targetPosition = targetCell.transform.position;
@@ -66,7 +71,6 @@ namespace TheZooMustGrow
                 targetPosition.y += targetCell.WaterSurfaceY;
             }
 
-            sphere_go.transform.localScale = new Vector3(4, 4, 4);
             sphere_go.transform.position = targetPosition;
             hexGrid.MakeChildOfColumn(sphere_go.transform, targetCell.ColumnIndex);
 
@@ -77,9 +81,27 @@ namespace TheZooMustGrow
         {
             GameObject cloud = new GameObject("Cloud");
 
+            int cloudSections = Random.Range(minCloudSections, maxCloudSections + 1);
+            
+            for (int i = 0; i < cloudSections; i++)
+            {
+                GameObject newCloudSection = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                newCloudSection.name = "CloudSection" + i.ToString();
 
+                Renderer rend = newCloudSection.GetComponent<Renderer>();
+                rend.material = cloudMaterial;
 
-            return GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                newCloudSection.transform.SetParent(cloud.transform);
+                newCloudSection.transform.localPosition = new Vector3(
+                    Random.Range(-2f, 2f),
+                    Random.Range(-1f, 1f),
+                    Random.Range(-2f, 2f));
+
+                float scale = Random.Range(2f, 4f);
+                newCloudSection.transform.localScale = new Vector3(scale, scale, scale);
+            }
+
+            return cloud;
         }
 
 
