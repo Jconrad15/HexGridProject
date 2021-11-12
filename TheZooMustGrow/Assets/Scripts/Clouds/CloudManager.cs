@@ -16,8 +16,11 @@ namespace TheZooMustGrow
 
         private Transform[] clouds;
 
-        public void GenerateNewClouds()
+        public void GenerateNewClouds(int seed)
         {
+            Random.State originalRandomState = Random.state;
+            Random.InitState(seed);
+
             // One cloud per chunk
             cloudCountMax = hexGrid.GetChunkCount();
             clouds = new Transform[cloudCountMax];
@@ -43,17 +46,25 @@ namespace TheZooMustGrow
             {
                 float height = Random.Range(minCloudOffGroundHeight, maxCloudOffGroundHeight);
 
-                clouds[i] = CreateCloud(cloudCells[i], height);
+                clouds[i] = PlaceCloud(cloudCells[i], height);
             }
+
+            Random.state = originalRandomState;
         }
 
-        private Transform CreateCloud(HexCell targetCell, float height)
+        private Transform PlaceCloud(HexCell targetCell, float height)
         {
             Debug.Log("CreateCloud");
-            GameObject sphere_go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            GameObject sphere_go = CreateCloudShape();
 
             Vector3 targetPosition = targetCell.transform.position;
             targetPosition.y += height;
+
+            // If targetcell is underwater, add extra height
+            if (targetCell.IsUnderwater)
+            {
+                targetPosition.y += targetCell.WaterSurfaceY;
+            }
 
             sphere_go.transform.localScale = new Vector3(4, 4, 4);
             sphere_go.transform.position = targetPosition;
@@ -61,6 +72,16 @@ namespace TheZooMustGrow
 
             return null;
         }
+
+        private GameObject CreateCloudShape()
+        {
+            GameObject cloud = new GameObject("Cloud");
+
+
+
+            return GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        }
+
 
         private List<int> CreateIndexList()
         {
