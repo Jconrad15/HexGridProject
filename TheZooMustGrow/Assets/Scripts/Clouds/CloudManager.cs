@@ -85,25 +85,26 @@ namespace TheZooMustGrow
             
             for (int i = 0; i < cloudSections; i++)
             {
-                GameObject newCloudSection = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                GameObject newCloudSection = IcoSphere.Create(cloudMaterial);
                 newCloudSection.name = "CloudSection" + i.ToString();
 
-                Renderer rend = newCloudSection.GetComponent<Renderer>();
-                rend.material = cloudMaterial;
-
                 newCloudSection.transform.SetParent(cloud.transform);
-                newCloudSection.transform.localPosition = new Vector3(
+
+                // Determine position and size
+                Vector3 position = new Vector3(
                     Random.Range(-2f, 2f),
                     Random.Range(-1f, 1f),
                     Random.Range(-2f, 2f));
 
                 float scale = Random.Range(2f, 4f);
+
+                // Set position and size
+                newCloudSection.transform.localPosition = position;
                 newCloudSection.transform.localScale = new Vector3(scale, scale, scale);
             }
 
             return cloud;
         }
-
 
         private List<int> CreateIndexList()
         {
