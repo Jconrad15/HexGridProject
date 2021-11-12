@@ -56,8 +56,14 @@ namespace TheZooMustGrow
             return i;
         }
 
-        public static GameObject Create(Material material)
+        public static GameObject Create(Material material, float radius = 1f)
         {
+            if (radius <= 0)
+            {
+                Debug.LogError("No negative cloud radius");
+                return null;
+            }
+
             // Create gameobject
             GameObject icoSphere_go = new GameObject("IcoSphere");
             MeshFilter filter = icoSphere_go.AddComponent<MeshFilter>();
@@ -72,7 +78,6 @@ namespace TheZooMustGrow
             //int index = 0;
 
             int recursionLevel = 1;
-            float radius = 1f;
 
             // create 12 vertices of a icosahedron
             float t = (1f + Mathf.Sqrt(5f)) / 2f;
