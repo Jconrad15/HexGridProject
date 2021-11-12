@@ -196,7 +196,7 @@ namespace TheZooMustGrow
             }
         }
 
-
+        public bool hasCloud { get; set; }
 
         private int terrainTypeIndex;
         public int TerrainTypeIndex

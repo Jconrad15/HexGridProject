@@ -19,23 +19,23 @@ namespace TheZooMustGrow
         public HexCell cellPrefab;
         public TextMeshProUGUI cellLabelPrefab;
 
-        HexCell[] cells;
+        private HexCell[] cells;
 
         public Texture2D noiseSource;
 
         public HexGridChunk chunkPrefab;
-        HexGridChunk[] chunks;
+        private HexGridChunk[] chunks;
 
         public int seed;
 
-        HexCellShaderData cellShaderData;
+        private HexCellShaderData cellShaderData;
 
-        HexCellPriorityQueue searchFrontier;
-        int searchFrontierPhase;
+        private HexCellPriorityQueue searchFrontier;
+        private int searchFrontierPhase;
 
-        HexCell currentPathFrom, currentPathTo;
+        private HexCell currentPathFrom, currentPathTo;
 
-        bool currentPathExists;
+        private bool currentPathExists;
         public bool HasPath
         {
             get
@@ -615,14 +615,22 @@ namespace TheZooMustGrow
                 }
 
                 columns[i].localPosition = position;
-
             }
-
         }
 
         public void MakeChildOfColumn(Transform child, int columnIndex)
         {
             child.SetParent(columns[columnIndex], false);
+        }
+
+        public int GetChunkCount()
+        {
+            return chunkCountX + chunkCountZ;
+        }
+
+        public int GetCellCount()
+        {
+            return cells.Length;
         }
 
         public void Save(BinaryWriter writer)

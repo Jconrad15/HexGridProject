@@ -5,6 +5,9 @@ namespace TheZooMustGrow
 {
 	public class HexMapGenerator : MonoBehaviour
 	{
+		[SerializeField]
+		private CloudManager cloudManager;
+
 		private int farmPercentage = 10;
 		private int maxFarmStamp = 4;
 		private int minFarmStamp = 2;
@@ -118,6 +121,8 @@ namespace TheZooMustGrow
 
 			CreateUrbans();
 			CreateFarms();
+
+			cloudManager.GenerateNewClouds();
 
             // Set all search phase variables in cells to zero
             for (int i = 0; i < cellCount; i++)
