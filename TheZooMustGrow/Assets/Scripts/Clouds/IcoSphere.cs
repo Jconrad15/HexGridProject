@@ -171,7 +171,7 @@ namespace TheZooMustGrow
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
             mesh.RecalculateNormals();
-            //mesh.Optimize();
+            mesh.Optimize();
 
             return icoSphere_go;
         }
