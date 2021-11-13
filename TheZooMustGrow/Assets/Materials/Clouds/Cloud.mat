@@ -47,6 +47,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _GridCoordinates:
+        m_Texture: {fileID: 2800000, guid: d3fa7ca499359484a8a979e10f0c41a7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -165,6 +169,7 @@ Material:
     m_Colors:
     - _AOColor: {r: 0, g: 0, b: 0, a: 1}
     - _AmbientColor: {r: 0, g: 0, b: 0, a: 0}
+    - _BackgroundColor: {r: 0.40784314, g: 0.38039216, b: 0.35686275, a: 1}
     - _Color: {r: 0.9056604, g: 0.8501246, b: 0.89157325, a: 1}
     - _Color1_B: {r: 0, g: 0, b: 0, a: 1}
     - _Color1_D: {r: 1, g: 1, b: 1, a: 1}
@@ -196,5 +201,6 @@ Material:
     - _LMColor: {r: 0, g: 0, b: 0, a: 1}
     - _RimColor: {r: 0, g: 0, b: 0, a: 1}
     - _ShadowColor: {r: 0, g: 0, b: 0, a: 1}
+    - _Specular: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
     - _TintColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

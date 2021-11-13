@@ -59,6 +59,6 @@ Shader "Custom/Feature" {
 				o.Alpha = c.a;
 			}
 			ENDCG
-	}
+		}
 		FallBack "Diffuse"
 }
