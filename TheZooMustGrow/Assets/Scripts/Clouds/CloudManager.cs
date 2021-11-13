@@ -77,7 +77,7 @@ namespace TheZooMustGrow
             sphere_go.transform.position = targetPosition;
             hexGrid.MakeChildOfColumn(sphere_go.transform, targetCell.ColumnIndex);
 
-            return null;
+            return sphere_go.transform;
         }
 
         private GameObject CreateCloudShape()
