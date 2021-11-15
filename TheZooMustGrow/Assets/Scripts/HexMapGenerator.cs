@@ -121,6 +121,7 @@ namespace TheZooMustGrow
 
 			CreateUrbans();
 			CreateFarms();
+			CreateWalls();
 
 			cloudManager.GenerateNewClouds(seed);
 
@@ -1175,6 +1176,119 @@ namespace TheZooMustGrow
 			}
 
 			return size;
+		}
+
+		private void CreateWalls()
+        {
+			// First wall pass based on urban and farm level
+            for (int i = 0; i < cellCount; i++)
+            {
+				HexCell cell = grid.GetCell(i);
+
+				// No underwater walls
+				if (cell.IsUnderwater) { continue; }
+
+				// Skip if already has a wall
+				if (cell.Walled) { continue; }
+
+				// Cache values
+				int urbanLevel = cell.UrbanLevel;
+				int farmLevel = cell.FarmLevel;
+				
+				// Place wall if urban level is high enough
+				if (urbanLevel > 1)
+                {
+					CreateWall(cell);
+					continue;
+				}
+				else if (urbanLevel == 1 && farmLevel > 1)
+                {
+					CreateWall(cell);
+					continue;
+                }
+
+				// Chance for walls on single urbanlevel with neighboring urban levels
+				bool addWall = false;
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+				{
+					HexCell neighbor = cell.GetNeighbor(d);
+					// Skip neighbor if it does not exist
+					if (!neighbor) { continue; }
+
+					if (urbanLevel > 1 || (urbanLevel == 1 && farmLevel > 1))
+                    {
+						addWall = true;
+						break;
+                    }
+				}
+
+				if (addWall && (urbanLevel > 0 || farmLevel > 0))
+                {
+					CreateWall(cell);
+					continue;
+                }
+			}
+
+			// Second wall pass
+			List<HexCell> additionalCells = ListPool<HexCell>.Get();
+			// Select additional cells for walls
+			for (int i = 0; i < cellCount; i++)
+            {
+				HexCell cell = grid.GetCell(i);
+
+				// No underwater walls
+				if (cell.IsUnderwater) { continue; }
+
+				// Skip if already has a wall
+				if (cell.Walled) { continue; }
+
+
+				// If two neighbors have walls, add a wall
+				int neighborsWithWalls = 0;
+				for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+				{
+					HexCell neighbor = cell.GetNeighbor(d);
+					// Skip neighbor if it does not exist
+					if (!neighbor) { continue; }
+
+					if (neighbor.Walled)
+					{
+						neighborsWithWalls += 1;
+					}
+				}
+
+				if (neighborsWithWalls >= 3)
+                {
+					additionalCells.Add(cell);
+                }
+				else if (neighborsWithWalls == 2)
+                {
+					if (Random.value > 0.5f)
+                    {
+						additionalCells.Add(cell);
+                    }
+                }
+
+			}
+
+            // Add walls to each additionl cell
+            for (int i = 0; i < additionalCells.Count; i++)
+            {
+				additionalCells[i].Walled = true;
+            }
+
+			ListPool<HexCell>.Add(additionalCells);
+		}
+
+		private void CreateWall(HexCell location)
+        {
+			// Decrease plant level if large in walled cells
+			if (location.PlantLevel >= 2)
+            {
+				location.PlantLevel -= 1;
+            }
+
+			location.Walled = true;
 		}
 
 		private void CreateRivers()
