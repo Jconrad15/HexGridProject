@@ -39,15 +39,16 @@ namespace TheZooMustGrow
             List<int> possibleIndices = CreateIndexList();
             for (int i = 0; i < cloudCountMax; i++)
             {
-                // Select index
-                int selectedIndex = possibleIndices[Random.Range(0, possibleIndices.Count)];
+                // Select cell index
+                int cellIndex = possibleIndices[Random.Range(0, possibleIndices.Count-1)];
 
                 // Remove index from possible indices
                 int lastIndex = possibleIndices.Count - 1;
-                possibleIndices[selectedIndex] = possibleIndices[lastIndex];
+
+                possibleIndices[possibleIndices.IndexOf(cellIndex)] = possibleIndices[lastIndex];
                 possibleIndices.RemoveAt(lastIndex);
 
-                cloudCells[i] = hexGrid.GetCell(selectedIndex);
+                cloudCells[i] = hexGrid.GetCell(cellIndex);
             }
             
             // Create the clouds
