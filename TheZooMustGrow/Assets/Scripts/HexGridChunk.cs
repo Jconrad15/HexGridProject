@@ -482,12 +482,11 @@ namespace TheZooMustGrow
         {
             EdgeVertices m = new EdgeVertices(
                 Vector3.Lerp(center, e.v1, 0.5f),
-                Vector3.Lerp(center, e.v5, 0.5f)
-            );
+                Vector3.Lerp(center, e.v5, 0.5f));
 
             // Make sure that the channel does not become too shallow too fast
             // so, the center point is not lowered
-            m.v3.y = e.v3.y;
+            m.v3.y = e.v3.y * 1.1f; // scale by 1.1
 
             TriangulateEdgeStrip(m, weights1, cell.Index,
                                  e, weights1, cell.Index);
@@ -510,14 +509,12 @@ namespace TheZooMustGrow
                 if (reversed)
                 {
                     rivers.AddTriangleUV(
-                        new Vector2(0.5f, 0.4f), new Vector2(1f, 0.2f), new Vector2(0f, 0.2f)
-                    );
+                        new Vector2(0.5f, 0.4f), new Vector2(1f, 0.2f), new Vector2(0f, 0.2f));
                 }
                 else
                 {
                     rivers.AddTriangleUV(
-                        new Vector2(0.5f, 0.4f), new Vector2(0f, 0.6f), new Vector2(1f, 0.6f)
-                    );
+                        new Vector2(0.5f, 0.4f), new Vector2(0f, 0.6f), new Vector2(1f, 0.6f));
                 }
 
                 rivers.AddTriangleCellData(indices, weights1);
