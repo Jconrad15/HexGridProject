@@ -1251,7 +1251,8 @@ namespace TheZooMustGrow
 					// Skip neighbor if it does not exist
 					if (!neighbor) { continue; }
 
-					if (neighbor.Walled)
+					if (neighbor.Walled &&
+						Mathf.Abs(neighbor.Elevation -cell.Elevation) < 2)
 					{
 						neighborsWithWalls += 1;
 					}
